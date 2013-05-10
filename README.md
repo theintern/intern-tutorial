@@ -141,7 +141,7 @@ Functional tests work differently than unit tests in that they issue a series of
     });
     ```
 
-3. Functional tests mimic user interaction, so they need an html page to load into the remote browser environment. Because the actual test JavaScript code isn't exposed to this remote browser environment at all, this html page <u>should include script tags for all necessary JavaScript</u>. Let's create a very basic HTML page that we'll test; place it alongside our functional test at `app/tests/functional/HelloWorld.html`. It will load our HelloWorld module and hook up a button's `onclick` to `HelloWorld.alertHello()`, the method on our module that we'll be testing. Our html page will also set a global to `true` once our module is loaded; that way, our functional test can wait for that global variable to become truthy before continuing.
+3. Functional tests mimic user interaction, so they need an html page to load into the remote browser environment. Because the actual test JavaScript code isn't exposed to this remote browser environment at all, this html page <u>should include script tags for all necessary JavaScript</u>. Let's create a very basic HTML page that we'll test; place it alongside our functional test at `app/tests/functional/HelloWorld.html`. It will load our HelloWorld module and hook up a button's `onclick` to `HelloWorld.alertHello()`, another method on our module that we'll be testing. Our html page will also set a global to `true` once our module is loaded; that way, our functional test can wait for that global variable to become truthy before continuing.
 
     ```html
     <!DOCTYPE html>
@@ -312,6 +312,6 @@ At this point, we have tests written and Intern configured. We are now ready to 
     node runner.js config=app/tests/intern
     ```
 
-## Going Forward
+## Step 6: Party
 
-We've now shown how to download and configure Intern, write tests, and run them in different environments. For a complete working copy of this project with Intern already configured and the tests already written, you can download a .zip archive [here](https://github.com/bitpshr/intern-tutorial/tags). Be sure to check out the full Intern [documentation](http://github.com/theintern/intern/wiki) and if you have any trouble, check out how to get Intern [support](https://github.com/theintern/intern/wiki/Support).
+Hopefully, we've now shown how to download and configure Intern, write tests, and run them in different environments. For a complete working copy of this project with Intern already configured and the tests already written, you can download a .zip archive [here](https://github.com/bitpshr/intern-tutorial/tags). Be sure to check out the full Intern [documentation](http://github.com/theintern/intern/wiki) and if you have any trouble, check out how to get Intern [support](https://github.com/theintern/intern/wiki/Support).
