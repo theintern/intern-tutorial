@@ -205,8 +205,8 @@ Functional tests work differently than unit tests in that they issue a series of
                             // load an html page into the remote browser environment
                             this.remote
                                     .require.toUrl('./HelloWorld.html')
-                                    .waitForCondition('myModule', 5000)
-                                    .elementById('ready')
+                                    .waitForCondition('ready', 5000)
+                                    .elementById('myButton')
                                             .click()
                                     .end()
                                     .alertText().then(function (text) {
