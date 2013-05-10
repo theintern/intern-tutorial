@@ -3,13 +3,13 @@
  */
 
 define(function () {
-    return {
-        hello: function () {
-            return 'world';
-        },
+	return {
+		hello: function () {
+			return 'world';
+		},
 
-        alertHello: function () {
+		alertHello: function () {
 			alert('world');
-        }
-    };
+		}
+	};
 });
