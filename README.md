@@ -36,7 +36,7 @@ The demo application contains an `app` folder that holds the code we will be tes
 
 Again, unit tests work by loading code into the current environment and running through a series of assertions that verify aspects of this code. When writing JavaScript tests, several different JavaScript syntaxes have gained popularity. Intern currently supports [bdd](https://github.com/theintern/intern/wiki/Writing-Tests#bdd), [tdd](https://github.com/theintern/intern/wiki/Writing-Tests#tdd), and [object](https://github.com/theintern/intern/wiki/Writing-Tests#object) tests. In this tutorial we will use the **object** interface but this is purely preference - all interfaces support the same functionality. Now, let's write a simple unit test!
 
-1. Create a new folder to hold our tests at `app/tests`.
+1. Create a new folder to hold our tests at `intern-tutorial/app/tests`.
 
     ```bash
     cd app
