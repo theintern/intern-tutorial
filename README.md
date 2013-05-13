@@ -135,8 +135,9 @@ Functional tests work differently than unit tests in that they issue a series of
     ```js
     define([
             'intern!object',
-            'intern/chai!assert'
-    ], function (registerSuite, assert) {
+            'intern/chai!assert',
+            'require'
+    ], function (registerSuite, assert, require) {
 
     });
     ```
@@ -176,15 +177,16 @@ Functional tests work differently than unit tests in that they issue a series of
     ```js
     define([
             'intern!object',
-            'intern/chai!assert'
-    ], function (registerSuite, assert) {
+            'intern/chai!assert',
+            'require'
+    ], function (registerSuite, assert, require) {
             registerSuite({
                     name: 'HelloWorld',
 
                     '#alertHello': function () {
                             // load an html page into the remote browser environment
                             this.remote
-                                    .require.toUrl('./HelloWorld.html')
+                                    .get(require.toUrl('./HelloWorld.html'))
                                     .waitForCondition('ready', 5000);
                     }
             });
@@ -196,15 +198,16 @@ Functional tests work differently than unit tests in that they issue a series of
     ```js
     define([
             'intern!object',
-            'intern/chai!assert'
-    ], function (registerSuite, assert) {
+            'intern/chai!assert',
+            'require'
+    ], function (registerSuite, assert, require) {
             registerSuite({
                     name: 'HelloWorld',
 
                     '#alertHello': function () {
                             // load an html page into the remote browser environment
                             this.remote
-                                    .require.toUrl('./HelloWorld.html')
+                                    .get(require.toUrl('./HelloWorld.html'))
                                     .waitForCondition('ready', 5000)
                                     .elementById('myButton')
                                             .click()
