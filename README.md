@@ -5,7 +5,7 @@ In order to demonstrate exactly how to get started using Intern, we've assembled
 Before we get started, be sure to grab the demo application by cloning this repository:
 
 ```bash
-git clone https://github.com/theintern/intern-examples/intern-tutorial.git
+git clone https://github.com/bitpshr/intern-tutorial.git
 ```
 
 ## What can Intern test?
@@ -156,7 +156,7 @@ Functional tests work differently than unit tests in that they issue a series of
                     <script>
                             var ready;
 
-                            require(['./HelloWorld'], function (HelloWorld) {
+                            require(['../../HelloWorld'], function (HelloWorld) {
                                     // attach myButton's onclick to HelloWorld.alertHello
                                     document.getElementById('myButton').addEventListener('click', function (event) {
                                             HelloWorld.alertHello();
@@ -223,7 +223,7 @@ Functional tests work differently than unit tests in that they issue a series of
 
 ## Step 4: Configuring Intern
 
-Before any tests can be run, Intern needs to be configured so it can find our tests and can know how to run them. This is done by creating an Intern configuration file. Full documentation on available configuration options can be found [here](https://github.com/theintern/intern/wiki/Configuring-Intern).
+Before any tests can be run, Intern needs to be configured so it can find our tests and can know how to run them. This is done by creating an Intern configuration file. Full documentation on available configuration options, check out the [Configuring Intern wiki page](https://github.com/theintern/intern/wiki/Configuring-Intern).
 
 
 1. Create a new configuration file at `app/tests/intern.js`. This file is just a simple AMD module with no dependencies or supporting code. We will add configuration options in the steps to follow.
@@ -246,7 +246,6 @@ Before any tests can be run, Intern needs to be configured so it can find our te
             // capabilities options specified for an environment will be copied as-is
             environments: [
                     { browserName: 'internet explorer', version: '10', platform: 'Windows 2012' },
-                    { browserName: 'internet explorer', version: '9', platform: 'Windows 2008' },
                     { browserName: 'firefox', version: '19', platform: [ 'Linux', 'Mac 10.6', 'Windows 2012' ] },
                     { browserName: 'chrome', platform: [ 'Linux', 'Mac 10.8', 'Windows 2008' ] },
                     { browserName: 'safari', version: '6', platform: 'Mac 10.8' }
@@ -267,7 +266,6 @@ Before any tests can be run, Intern needs to be configured so it can find our te
             // capabilities options specified for an environment will be copied as-is
             environments: [
                     { browserName: 'internet explorer', version: '10', platform: 'Windows 2012' },
-                    { browserName: 'internet explorer', version: '9', platform: 'Windows 2008' },
                     { browserName: 'firefox', version: '19', platform: [ 'Linux', 'Mac 10.6', 'Windows 2012' ] },
                     { browserName: 'chrome', platform: [ 'Linux', 'Mac 10.8', 'Windows 2008' ] },
                     { browserName: 'safari', version: '6', platform: 'Mac 10.8' }
@@ -287,7 +285,7 @@ Before any tests can be run, Intern needs to be configured so it can find our te
             suites: [ 'app/tests/HelloWorld' ],
 
             // Functional test suite(s) to run in each browser once non-functional tests are completed
-            functionalSuites: [ 'myPackage/tests/functional/HelloWorld' ]
+            functionalSuites: [ 'app/tests/functional/HelloWorld' ]
     });
     ```
 
