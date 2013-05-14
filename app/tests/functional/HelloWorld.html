@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<!-- 
+		We pull in dojo here only for its AMD loader, since HelloWorld.js is an AMD module.
+		Intern doesn't require that your application uses Dojo at all.
+		-->
+		<script src="//ajax.googleapis.com/ajax/libs/dojo/1.9.0/dojo/dojo.js"></script>
+		<script>
+			var ready;
+
+			require(['../../HelloWorld.js'], function (HelloWorld) {
+				// attach myButton's onclick to HelloWorld.alertHello
+				document.getElementById('myButton').addEventListener('click', function (event) {
+					HelloWorld.alertHello();
+				}, false);
+				// when everything is done, set a global ready flag
+				ready = true;
+			});
+		</script>
+	</head>
+	<body>
+		<button id="myButton">hello world</button>
+	</body>
+</html>
