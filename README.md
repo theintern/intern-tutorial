@@ -1,9 +1,3 @@
-TODO: Please note that `HelloWorld` is NOT A CONSTRUCTOR and should not have been named with an uppercase first letter.
-TODO: Please note that the `greet` (formerly `hello`) method needs to not be so lame. It should accept an argument and `return 'Hello, ' + (name || 'world')!';`.
-TODO: The `alert` (formerly `alertHello`) method should be using the `greet` method, not duplicating the functionality of the `greet` method.
-TODO: '#' means 'prototype'! Don’t use it if you are not testing a prototype method!
-TODO: Because the message in the original assertion described the test code exactly, either the message should not have existed or there is something wrong with the test.
-
 # Intern tutorial
 
 In this tutorial, we will walk through how to set up, write tests, and run tests using Intern. This repository contains a very basic Hello World demo “application” that we’ll be building on until we’ve made it fully tested.
@@ -41,11 +35,61 @@ cd ..
 
 *Note: Improved installation using `npm` is coming in version 1.1.*
 
-That’s it! We now have a complete installation of Intern ready to go. Next, we need to start writing tests for our demo application.
+That’s it! We now have a complete installation of Intern ready to go. Next, we need to configure Intern and start writing tests for our demo application.
 
-TODO: Put configuration instructions here so we can have a working client.html and let the reader run the tests as we go. Blindly writing tests and not being able to actually see if they work until the end of the tutorial is bad news. People need to be engaged with working stuff throughout the tutorial.
+## Step 2: Configuring Intern
 
-## Step 2: Write a unit test
+Intern needs to be configured so it can find our tests and know how we want to run them. This is done by creating an Intern configuration file, which is normally located within an application's `tests` directory, so let's make a new file at `app/tests/intern.js` and paste the following skeleton into it:
+
+```js
+define({
+	// Browsers to run integration testing against. Note that version numbers must be strings if used with Sauce
+	// OnDemand. Options that will be permutated are browserName, version, platform, and platformVersion; any other
+	// capabilities options specified for an environment will be copied as-is
+	environments: [
+		{ browserName: 'internet explorer', version: '10', platform: 'Windows 2012' },
+		{ browserName: 'firefox', version: '19', platform: [ 'Linux', 'Mac 10.6', 'Windows 2012' ] },
+		{ browserName: 'chrome', platform: [ 'Linux', 'Mac 10.8', 'Windows 2008' ] },
+		{ browserName: 'safari', version: '6', platform: 'Mac 10.8' }
+	],
+
+	// Whether or not to start Sauce Connect to interface with Sauce Labs before running tests
+	useSauceConnect: true
+});
+```
+
+In this tutorial, we'll configure Intern to be able to run tests against multiple browsers using [Sauce Labs](http://saucelabs.com). In the code above, we've initially added an `environments` array specifying what browsers to target. We also set a `useSauceConnect` flag to *true* indicating that we want to use the Sauce Labs service.
+
+The Dojo AMD loader used by Intern needs to be able to find our application code. We can add any AMD configuration options supported by the Dojo loader inside a `loader` option in our configuration file, so let's add one for our `app` package.
+
+```js
+// Learn more about configuring this file at <https://github.com/theintern/intern/wiki/Configuring-Intern>.
+define({
+	// Browsers to run integration testing against. Note that version numbers must be strings if used with Sauce
+	// OnDemand. Options that will be permutated are browserName, version, platform, and platformVersion; any other
+	// capabilities options specified for an environment will be copied as-is
+	environments: [
+		{ browserName: 'internet explorer', version: '10', platform: 'Windows 2012' },
+		{ browserName: 'firefox', version: '19', platform: [ 'Linux', 'Mac 10.6', 'Windows 2012' ] },
+		{ browserName: 'chrome', platform: [ 'Linux', 'Mac 10.8', 'Windows 2008' ] },
+		{ browserName: 'safari', version: '6', platform: 'Mac 10.8' }
+	],
+
+	// Whether or not to start Sauce Connect to interface with Sauce Labs before running tests
+	useSauceConnect: true,
+
+	// Configuration options for the module loader; any AMD configuration options supported by the Dojo loader can be
+	// used here
+	loader: {
+		// Packages that should be registered with the loader in each testing environment
+		packages: [ 'app' ]
+	}
+});
+```
+
+Now that we have an Intern configuration file created, we need to write the tests we want Intern to run.
+
+## Step 3: Write a unit test
 
 There are several different popular syntaxes for writing unit tests, and Intern comes with built-in support for the three most common: [BDD](https://github.com/theintern/intern/wiki/Writing-Tests#bdd), [TDD](https://github.com/theintern/intern/wiki/Writing-Tests#tdd), and [object](https://github.com/theintern/intern/wiki/Writing-Tests#object). In this tutorial, we will use the **object** syntax, but this is an individual preference. All of these interfaces support the same functionality, so pick whichever one you think is the clearest when you start writing your own tests!
 
@@ -71,7 +115,7 @@ define([
 
 This bit of boilerplate loads the object syntax interface as `registerSuite`, the demo application’s Hello World code module as `hello`, and the assertion interface as `assert`. The object interface is what lets us register tests within Intern, and the assertion interface is what lets us *assert* that a variable (or function) returns the expected, correct, value.
 
-Now that the basics of our test module are in place, the next step is to use `registerSuite` to register a **test suite** and populate this suite with **test cases**. TODO: Explain the hierarchy of test module -> test suites -> test cases -> assertions. Since we are writing a unit test, let’s test the `hello.greet` method.
+Intern test modules can register one more more **test suites**, which can each contain any number of **test cases**. Now that the basics of our `hello.js` test module are in place, the next step is to use `registerSuite` to do just that - register a suite with test cases that test our demo app. Since we are writing a unit test, let’s test the `hello.greet` method.
 
 Looking at the source code for `app/hello`, we can see that when `greet` is called it will return the string `"Hello, world!"` if no name is passed, or `"Hello, <name>!"` if a name is passed. We need to make sure we test both of these code branches. If we’ve done it right, our test code will end up looking something like this:
 
@@ -91,53 +135,31 @@ define([
 	});
 });
 ```
+*Note: Intern offers hooks that can be utilized within our a to run arbitrary code at various points during a test run - more information can be found on the [Writing Tests wiki page](https://github.com/theintern/intern/wiki/Writing-Tests).*
 
-In the above, we’ve registered a new suite for our `hello` module named “hello”, a new test case for the `greet` method named “greet”, and wrote two assertions: one where we call `greet` with no arguments, and one where we call `greet` with one argument.
+In the code above, we’ve registered a new suite for our `hello` module named “hello”, a new test case for the `greet` method named “greet”, and wrote two assertions: one where we call `greet` with no arguments, and one where we call `greet` with one argument. **Assertions** are statements that can be used to verify some logic about the target being tested. Here, we're using `assert.strictEqual` to prove strict equality of the return value of `hello.greet` and an expected value, yet other assertion methods exist. Such additional methods can be accessed via Intern's assertion interfaces at `intern/chai!assert`, `intern/chai!should`, and `intern/chai!expect`. For a complete list of available methods, see the [ChaiJS documentation](http://chaijs.com/api/).
 
-TODO: Explain how assertions work here.
+The final step for writing our unit test is to add information to the Intern configuration file we previously created so that Intern can find our new test module. This is done by using a `suites` array containing module identifiers of unit tests to run. Let's add the following option to the configuration file at `app/tests/intern.js`:
 
+```js
+// ... 
 
+suites: ['app/tests/hello']
 
-TODO: Advanced material should not be in a basics tutorial! Mention this stuff and just pass it off.
+// ...
+```
 
-4. If necessary, we can utilize hooks within our suite to run arbitrary code at various points during a test run. Below we add log statements at each stage of the test run to demonstrate these hooks, but this is not necessary for the tutorial to run successfully.
+**Checkpoint:** At this point in the tutorial, Intern is downloaded and configured and we have a basic unit test module written. To run the tests in a local browser, visit the following url and inspect the console (making sure to adjust the path to `app` appropriately):
 
-	```js
-	define([
-		'intern!object',
-		'intern/chai!assert',
-		'../HelloWorld'
-	], function (registerSuite, assert, HelloWorld) {
-			registerSuite({
-				name: 'HelloWorld',
+```
+http://localhost/path/to/app/intern/client.html?config=app/tests/intern
+```
 
-				// Note: this method is called `before` when using tdd or bdd interfaces
-				setup: function () {
-					console.log('Before this suite runs');
-				},
+To run the tests using NodeJS, run the following command from the `app` dir:
 
-				beforeEach: function () {
-					console.log('Before each test or nested suite');
-				},
-
-				afterEach: function () {
-					console.log('After each test or nested suite');
-				},
-
-				// Note: this method is called `after` when using tdd or bdd interfaces
-				teardown: function () {
-					console.log('After this suite runs');
-				},
-
-				'#hello': function () {
-					// first, let's execute the method
-					var returnValue = HelloWorld.hello();
-					// now let's assert that the value is what we expect
-					assert.strictEqual(returnValue, 'world', 'HelloWorld#hello should return "world"');
-				}
-			});
-	});
-	```
+```bash
+node intern/client.js config=app/tests/intern
+```
 
 ## Step 3: Writing a Functional Test
 
@@ -238,131 +260,6 @@ Functional tests work differently than unit tests in that they issue a series of
 					.dismissAlert();
 			}
 		});
-	});
-	```
-
-## Step 4: Configuring Intern
-
-Before any tests can be run, Intern needs to be configured so it can find our tests and can know how to run them. This is done by creating an Intern configuration file. Full documentation on available configuration options, check out the [Configuring Intern wiki page](https://github.com/theintern/intern/wiki/Configuring-Intern).
-
-
-1. Create a new configuration file at `app/tests/intern.js`. This file is just a simple AMD module with no dependencies or supporting code. We will add configuration options in the steps to follow.
-
-	```js
-	// Learn more about configuring this file at <https://github.com/theintern/intern/wiki/Configuring-Intern>.
-	define({
-
-	});
-	```
-
-2. In this tutorial, we'll configure Intern to be able to run tests against multiple browsers using [Sauce Labs](http://saucelabs.com). Let's add an `environments` array specifying what browsers to target and set a `useSauceConnect` flag to *true* indicating that we want to use the Sauce Labs service.
-
-
-	```js
-	// Learn more about configuring this file at <https://github.com/theintern/intern/wiki/Configuring-Intern>.
-	define({
-		// Browsers to run integration testing against. Note that version numbers must be strings if used with Sauce
-		// OnDemand. Options that will be permutated are browserName, version, platform, and platformVersion; any other
-		// capabilities options specified for an environment will be copied as-is
-		environments: [
-			{ browserName: 'internet explorer', version: '10', platform: 'Windows 2012' },
-			{ browserName: 'firefox', version: '19', platform: [ 'Linux', 'Mac 10.6', 'Windows 2012' ] },
-			{ browserName: 'chrome', platform: [ 'Linux', 'Mac 10.8', 'Windows 2008' ] },
-			{ browserName: 'safari', version: '6', platform: 'Mac 10.8' }
-		],
-
-		// Whether or not to start Sauce Connect to interface with Sauce Labs before running tests
-		useSauceConnect: true
-	});
-	```
-
-3. We can add any AMD loader configuration options inside a `loader` object. Let's register our `app` package so Intern can find our tests and module. We will also add `suites` and `functionalSuites` array options containing the module identifier of our tests so Intern knows which specific tests to run.
-
-	```js
-	// Learn more about configuring this file at <https://github.com/theintern/intern/wiki/Configuring-Intern>.
-	define({
-		// Browsers to run integration testing against. Note that version numbers must be strings if used with Sauce
-		// OnDemand. Options that will be permutated are browserName, version, platform, and platformVersion; any other
-		// capabilities options specified for an environment will be copied as-is
-		environments: [
-			{ browserName: 'internet explorer', version: '10', platform: 'Windows 2012' },
-			{ browserName: 'firefox', version: '19', platform: [ 'Linux', 'Mac 10.6', 'Windows 2012' ] },
-			{ browserName: 'chrome', platform: [ 'Linux', 'Mac 10.8', 'Windows 2008' ] },
-			{ browserName: 'safari', version: '6', platform: 'Mac 10.8' }
-		],
-
-		// Whether or not to start Sauce Connect to interface with Sauce Labs before running tests
-		useSauceConnect: true,
-
-		// Configuration options for the module loader; any AMD configuration options supported by the Dojo loader can be
-		// used here
-		loader: {
-			// Packages that should be registered with the loader in each testing environment
-			packages: [ 'app' ]
-		},
-
-		// Non-functional test suite(s) to run in each browser
-		suites: [ 'app/tests/HelloWorld' ],
-
-		// Functional test suite(s) to run in each browser once non-functional tests are completed
-		functionalSuites: [ 'app/tests/functional/HelloWorld' ]
-	});
-	```
-
-4. Lastly, since we are using Intern's auto test runner, we need to provide a few more default configuration options. The options provided below should work fine for most set ups; if more customization is required, be sure to check out the full [configuration documentation](https://github.com/theintern/intern/wiki/Configuring-Intern) for info.
-
-	```js
-	// Learn more about configuring this file at <https://github.com/theintern/intern/wiki/Configuring-Intern>.
-	define({
-		// Browsers to run integration testing against. Note that version numbers must be strings if used with Sauce
-		// OnDemand. Options that will be permutated are browserName, version, platform, and platformVersion; any other
-		// capabilities options specified for an environment will be copied as-is
-		environments: [
-			{ browserName: 'internet explorer', version: '10', platform: 'Windows 2012' },
-			{ browserName: 'firefox', version: '19', platform: [ 'Linux', 'Mac 10.6', 'Windows 2012' ] },
-			{ browserName: 'chrome', platform: [ 'Linux', 'Mac 10.8', 'Windows 2008' ] },
-			{ browserName: 'safari', version: '6', platform: 'Mac 10.8' }
-		],
-
-		// Whether or not to start Sauce Connect to interface with Sauce Labs before running tests
-		useSauceConnect: true,
-
-		// Configuration options for the module loader; any AMD configuration options supported by the Dojo loader can be
-		// used here
-		loader: {
-			// Packages that should be registered with the loader in each testing environment
-			packages: [ 'app' ]
-		},
-
-		// Non-functional test suite(s) to run in each browser
-		suites: [ 'app/tests/HelloWorld' ],
-
-		// Functional test suite(s) to run in each browser once non-functional tests are completed
-		functionalSuites: [ 'app/tests/functional/HelloWorld' ],
-
-		// The port on which the instrumenting proxy will listen
-		proxyPort: 9000,
-
-		// A fully qualified URL to the Intern proxy
-		proxyUrl: 'http://localhost:9000/',
-
-		// Default desired capabilities for all environments. Individual capabilities can be overridden by any of the
-		// specified browser environments in the `environments` array below as well. See
-		// https://code.google.com/p/selenium/wiki/DesiredCapabilities for standard Selenium capabilities and
-		// https://saucelabs.com/docs/additional-config#desired-capabilities for Sauce Labs capabilities.
-		// Note that the `build` capability will be filled in with the current commit ID from the Travis CI environment
-		// automatically
-		capabilities: {
-			'selenium-version': '2.30.0'
-		},
-
-		// Connection information for the remote WebDriver service. If using Sauce Labs, keep your username and password
-		// in the SAUCE_USERNAME and SAUCE_ACCESS_KEY environment variables unless you are sure you will NEVER be
-		// publishing this configuration file somewhere
-		webdriver: {
-			host: 'localhost',
-			port: 4444
-		}
 	});
 	```
 
