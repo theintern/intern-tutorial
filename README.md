@@ -1,80 +1,104 @@
-# Intern Tutorial
+TODO: Please note that `HelloWorld` is NOT A CONSTRUCTOR and should not have been named with an uppercase first letter.
+TODO: Please note that the `greet` (formerly `hello`) method needs to not be so lame. It should accept an argument and `return 'Hello, ' + (name || 'world')!';`.
+TODO: The `alert` (formerly `alertHello`) method should be using the `greet` method, not duplicating the functionality of the `greet` method.
+TODO: '#' means 'prototype'! Don’t use it if you are not testing a prototype method!
+TODO: Because the message in the original assertion described the test code exactly, either the message should not have existed or there is something wrong with the test.
 
-In order to demonstrate exactly how to get started using Intern, we've assembled a very simple demo application (just a single module) that doesn't have Intern or testing of any kind set up at all. Using this app, we will walk through the process of downloading, configuring, and running Intern start-to-finish, and go from "nothing" to a full test suite with both a unit test and a functional test.
+# Intern tutorial
 
-Before we get started, be sure to grab the demo application by cloning this repository:
+In this tutorial, we will walk through how to set up, write tests, and run tests using Intern. This repository contains a very basic Hello World demo “application” that we’ll be building on until we’ve made it fully tested.
+
+To get started, download the demo application by cloning this repository:
 
 ```bash
-git clone https://github.com/bitpshr/intern-tutorial.git
+git clone https://github.com/theintern/intern-tutorial.git
 ```
+
+The application itself is in the package directory named `app`.
 
 ## What can Intern test?
 
-Let's take a step back and understand exactly what Intern can do as far as testing a JavaScript codebase. Intern supports two types of tests: unit tests and functional tests. **Unit tests** work by loading code and executing assertions against that code, such as verifying that a method on a module returns an expected value. **Functional tests** mimic user interaction and work by issuing commands via a WebDriver extension. As such, they require an external server that is listening for these commands, ready to automate the actual testing on various browser VMs. This is a powerful notion: Intern allows us to test *code* with regular unit tests and also allows us to test *functionality* by mimicking user interaction, and we can do so on all major browsers. 
+Intern supports two types of tests: unit tests and functional tests. **Unit tests** work by executing code directly and inspecting the result, such as calling a function and then checking that it returns an expected value. **Functional tests** mimic user interaction and work by issuing commands to browsers via a WebDriver browser extension. As such, they require an external server that sends these commands to the browser and processes the result. This is a powerful notion: Intern allows us to test *code* with regular unit tests, but also allows us to test *functionality* by mimicking user interaction within real browsers.
 
-**Don't worry!** Setting up and writing both unit and functional tests is a simple process, and explicit instructions on how to do so can be found in the sections below.
+## Step 1: Download Intern
 
-## Step 1: Downloading Intern
+The recommended filesystem structure for Intern is to install it as a sibling to whatever package is being tested. Our demo app is in the `intern-tutorial/app` directory, so we will install Intern to `intern-tutorial/intern`.
 
-The demo application contains an `app` folder that holds the code we will be testing. As such, we will install Intern as a sibling to this folder.
+First, clone the Intern repository as a sibling of the `app` directory, making sure to also retrieve its submodules using git’s `--recursive` flag:
 
-1. Clone this repository as a sibling directory of the package (or packages) that you want to test.
+```bash
+cd intern-tutorial
+git clone --recursive https://github.com/theintern/intern.git
+```
 
-	```bash
-	cd intern-tutorial
-	git clone --recursive https://github.com/theintern/intern.git
-	```
+Then, switching into the `intern` directory momentarily, use `npm` to install its additional server-side dependencies:
 
-2. Use npm to install dependencies.
+```bash
+cd intern
+npm install --production
+cd ..
+```
 
-	```bash
-	cd intern
-	npm install --production && cd ..
-	```
+*Note: Improved installation using `npm` is coming in version 1.1.*
 
-## Step 2: Writing a Unit Test
+That’s it! We now have a complete installation of Intern ready to go. Next, we need to start writing tests for our demo application.
 
-Again, unit tests work by loading code into the current environment and running through a series of assertions that verify aspects of this code. When writing JavaScript tests, several different JavaScript syntaxes have gained popularity. Intern currently supports [bdd](https://github.com/theintern/intern/wiki/Writing-Tests#bdd), [tdd](https://github.com/theintern/intern/wiki/Writing-Tests#tdd), and [object](https://github.com/theintern/intern/wiki/Writing-Tests#object) tests. In this tutorial we will use the **object** interface but this is purely preference - all interfaces support the same functionality. Now, let's write a simple unit test!
+TODO: Put configuration instructions here so we can have a working client.html and let the reader run the tests as we go. Blindly writing tests and not being able to actually see if they work until the end of the tutorial is bad news. People need to be engaged with working stuff throughout the tutorial.
 
-1. Create a new folder to hold our tests at `intern-tutorial/app/tests`.
+## Step 2: Write a unit test
 
-	```bash
-	cd app
-	mkdir tests
-	```
+There are several different popular syntaxes for writing unit tests, and Intern comes with built-in support for the three most common: [BDD](https://github.com/theintern/intern/wiki/Writing-Tests#bdd), [TDD](https://github.com/theintern/intern/wiki/Writing-Tests#tdd), and [object](https://github.com/theintern/intern/wiki/Writing-Tests#object). In this tutorial, we will use the **object** syntax, but this is an individual preference. All of these interfaces support the same functionality, so pick whichever one you think is the clearest when you start writing your own tests!
 
-2. Next, we'll create an actual test for the `HelloWorld` module included in the demo application. Below is the start of our test - it is a basic AMD module that requires three other modules: the object interface we are using, the assertion module, and the `HelloWorld` module we are actually testing. Create a new file with the contents below at `app/tests/HelloWorld.js`.
+Before writing any tests, we first need to create a place for them to live. Normally, all tests for a given package are put within a `tests` subdirectory for that package, so create one at `app/tests`:
 
-	```js
-	define([
-		'intern!object',
-		'intern/chai!assert',
-		'../HelloWorld'
-	], function (registerSuite, assert, HelloWorld) {
+```bash
+mkdir app/tests
+```
 
+Next, we need to create a test module which will contain the actual tests for our application. Intern’s test modules are written using the AMD format and are typically split up so that there’s one test module for each corresponding code module being tested. We have one code module in our demo app (`app/hello`), so create a new test module at `app/tests/hello.js` and paste the following boilerplate into it:
+
+```js
+define([
+	'intern!object',
+	'intern/chai!assert',
+	'../hello'
+], function (registerSuite, assert, hello) {
+
+});
+```
+
+*Note: Future versions of Intern will contain extra Grunt tasks to assist with generating new test modules.*
+
+This bit of boilerplate loads the object syntax interface as `registerSuite`, the demo application’s Hello World code module as `hello`, and the assertion interface as `assert`. The object interface is what lets us register tests within Intern, and the assertion interface is what lets us *assert* that a variable (or function) returns the expected, correct, value.
+
+Now that the basics of our test module are in place, the next step is to use `registerSuite` to register a **test suite** and populate this suite with **test cases**. TODO: Explain the hierarchy of test module -> test suites -> test cases -> assertions. Since we are writing a unit test, let’s test the `hello.greet` method.
+
+Looking at the source code for `app/hello`, we can see that when `greet` is called it will return the string `"Hello, world!"` if no name is passed, or `"Hello, <name>!"` if a name is passed. We need to make sure we test both of these code branches. If we’ve done it right, our test code will end up looking something like this:
+
+```js
+define([
+	'intern!object',
+	'intern/chai!assert',
+	'../hello'
+], function (registerSuite, assert, hello) {
+	registerSuite({
+		name: 'hello',
+
+		'greet': function () {
+			assert.strictEqual(hello.greet('Murray')), 'Hello, Murray!', 'hello.greet should return a greeting for the person named in the first argument');
+			assert.strictEqual(hello.greet(), 'Hello, world!', 'hello.greet with no arguments should return a greeting to "world"');
+		}
 	});
-	```
+});
+```
 
-3. Now that we have our test module set up, the next step is to register a **suite** and populate this suite with **test cases**. The `HelloWorld` module is very simple, so let's test its `hello` method, which should return the string "world". We register a suite with one test case that calls this method and asserts the return value.
+In the above, we’ve registered a new suite for our `hello` module named “hello”, a new test case for the `greet` method named “greet”, and wrote two assertions: one where we call `greet` with no arguments, and one where we call `greet` with one argument.
 
-	```js
-	define([
-		'intern!object',
-		'intern/chai!assert',
-		'../HelloWorld'
-	], function (registerSuite, assert, HelloWorld) {
-		registerSuite({
-			name: 'HelloWorld',
+TODO: Explain how assertions work here.
 
-			'#hello': function () {
-				// first, let's execute the method
-				var returnValue = HelloWorld.hello();
-				// now let's assert that the value is what we expect
-				assert.strictEqual(returnValue, 'world', 'HelloWorld#hello should return "world"');
-			}
-		});
-	});
-	```
+
+
+TODO: Advanced material should not be in a basics tutorial! Mention this stuff and just pass it off.
 
 4. If necessary, we can utilize hooks within our suite to run arbitrary code at various points during a test run. Below we add log statements at each stage of the test run to demonstrate these hooks, but this is not necessary for the tutorial to run successfully.
 
@@ -144,7 +168,7 @@ Functional tests work differently than unit tests in that they issue a series of
 	<!DOCTYPE html>
 	<html>
 		<head>
-			<!-- 
+			<!--
 			We pull in dojo here only for its AMD loader, since HelloWorld.js is an AMD module.
 			Intern doesn't require that your application uses Dojo at all.
 			-->
@@ -227,7 +251,7 @@ Before any tests can be run, Intern needs to be configured so it can find our te
 	```js
 	// Learn more about configuring this file at <https://github.com/theintern/intern/wiki/Configuring-Intern>.
 	define({
-			
+
 	});
 	```
 
