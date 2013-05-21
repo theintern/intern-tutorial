@@ -39,7 +39,13 @@ That’s it! We now have a complete installation of Intern ready to go. Next, we
 
 ## Step 2: Configuring Intern
 
-Intern needs to be configured so it can find our tests and know how we want to run them. This is done by creating an Intern configuration file, which is normally located within an application's `tests` directory, so let's make a new file at `app/tests/intern.js` and paste the following skeleton into it:
+Intern needs to be configured so it can find our tests and know how we want to run them. This is done by creating an Intern configuration file, which is just a regular AMD module with no dependencies. Before writing a configuration file or any tests, we first need to create a place for them to live. Normally, the configuration file and tests for a given package are put within a `tests` subdirectory for that package, so create one at `app/tests`:
+
+```bash
+mkdir app/tests
+```
+
+Next, let's make our new configuration file at `app/tests/intern.js` and paste the following skeleton into it:
 
 ```js
 define({
@@ -58,7 +64,7 @@ define({
 });
 ```
 
-In this tutorial, we'll configure Intern to be able to run tests against multiple browsers using [Sauce Labs](http://saucelabs.com). In the code above, we've initially added an `environments` array specifying what browsers to target. We also set a `useSauceConnect` flag to *true* indicating that we want to use the Sauce Labs service.
+In the code above, we've initially added an `environments` array containing objects that specify what browsers to target for integration testing. These browser objects correspond to versions supported by [Selenium](http://docs.seleniumhq.org/), and in this tutorial, we'll be using a hosted Selenium service called [Sauce Labs](http://saucelabs.com). Intern supports a special configuration flag that we've also set to `true` in the code above, `useSauceConnect`. This flag is purely for convenience and automatically starts the *Sauce Connect* interface before running tests.
 
 The Dojo AMD loader used by Intern needs to be able to find our application code. We can add any AMD configuration options supported by the Dojo loader inside a `loader` option in our configuration file, so let's add one for our `app` package.
 
@@ -87,19 +93,13 @@ define({
 });
 ```
 
-Now that we have an Intern configuration file created, we need to write the tests we want Intern to run.
+We've now configured Intern! The next step is to write tests and tell Intern to run them.
 
 ## Step 3: Write a unit test
 
 There are several different popular syntaxes for writing unit tests, and Intern comes with built-in support for the three most common: [BDD](https://github.com/theintern/intern/wiki/Writing-Tests#bdd), [TDD](https://github.com/theintern/intern/wiki/Writing-Tests#tdd), and [object](https://github.com/theintern/intern/wiki/Writing-Tests#object). In this tutorial, we will use the **object** syntax, but this is an individual preference. All of these interfaces support the same functionality, so pick whichever one you think is the clearest when you start writing your own tests!
 
-Before writing any tests, we first need to create a place for them to live. Normally, all tests for a given package are put within a `tests` subdirectory for that package, so create one at `app/tests`:
-
-```bash
-mkdir app/tests
-```
-
-Next, we need to create a test module which will contain the actual tests for our application. Intern’s test modules are written using the AMD format and are typically split up so that there’s one test module for each corresponding code module being tested. We have one code module in our demo app (`app/hello`), so create a new test module at `app/tests/hello.js` and paste the following boilerplate into it:
+We first need to create a test module which will contain the actual tests for our application. Intern’s test modules are written using the AMD format and are typically split up so that there’s one test module for each corresponding code module being tested. We have one code module in our demo app (`app/hello`), so create a new test module at `app/tests/hello.js` and paste the following boilerplate into it:
 
 ```js
 define([
@@ -137,9 +137,11 @@ define([
 ```
 *Note: Intern offers hooks that can be utilized within our a to run arbitrary code at various points during a test run - more information can be found on the [Writing Tests wiki page](https://github.com/theintern/intern/wiki/Writing-Tests).*
 
-In the code above, we’ve registered a new suite for our `hello` module named “hello”, a new test case for the `greet` method named “greet”, and wrote two assertions: one where we call `greet` with no arguments, and one where we call `greet` with one argument. **Assertions** are statements that can be used to verify some logic about the target being tested. Here, we're using `assert.strictEqual` to prove strict equality of the return value of `hello.greet` and an expected value, yet other assertion methods exist. Such additional methods can be accessed via Intern's assertion interfaces at `intern/chai!assert`, `intern/chai!should`, and `intern/chai!expect`. For a complete list of available methods, see the [ChaiJS documentation](http://chaijs.com/api/).
+In the code above, we’ve registered a new suite for our `hello` module named “hello”, a new test case for the `greet` method named “greet”, and wrote two assertions: one where we call `greet` with no arguments, and one where we call `greet` with one argument. 
 
-The final step for writing our unit test is to add information to the Intern configuration file we previously created so that Intern can find our new test module. This is done by using a `suites` array containing module identifiers of unit tests to run. Let's add the following option to the configuration file at `app/tests/intern.js`:
+**Assertions** are statements that can be used to verify some logic about the target being tested. Here, we're using `assert.strictEqual` to prove strict equality of the return value of `hello.greet` and an expected value, yet other assertion methods exist. Such additional methods can be accessed by requiring Intern's different assertion interfaces at `intern/chai!assert`, `intern/chai!should`, and `intern/chai!expect`. For a complete list of available methods, see the [ChaiJS documentation](http://chaijs.com/api/).
+
+The final step for writing our unit test is to add information to the Intern configuration file we previously created so that Intern can find our new test module. Let's add the a `suites` array containing the AMD [module identifiers](https://github.com/amdjs/amdjs-api/wiki/AMD#id-) of our test to the config file at `app/tests/intern.js`:
 
 ```js
 // ... 
@@ -152,10 +154,10 @@ suites: ['app/tests/hello']
 **Checkpoint:** At this point in the tutorial, Intern is downloaded and configured and we have a basic unit test module written. To run the tests in a local browser, visit the following url and inspect the console (making sure to adjust the path to `app` appropriately):
 
 ```
-http://localhost/path/to/app/intern/client.html?config=app/tests/intern
+http://localhost/app/intern/client.html?config=app/tests/intern
 ```
 
-To run the tests using NodeJS, run the following command from the `app` dir:
+To run the tests using NodeJS, run the following command from the `app` directory:
 
 ```bash
 node intern/client.js config=app/tests/intern
