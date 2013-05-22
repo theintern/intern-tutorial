@@ -1,3 +1,5 @@
+**Note**: This tutorial is a **work in progress** and probably isn't complete yet.
+
 # Intern tutorial
 
 In this tutorial, we will walk through how to set up, write tests, and run tests using Intern. This repository contains a very basic Hello World demo “application” that we’ll be building on until we’ve made it fully tested.
