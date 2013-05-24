@@ -77,7 +77,7 @@ define({
 
 In the code above, we've initially added default settings necessary run tests using a Selenium instance, and in this tutorial, we'll be using a hosted Selenium service called [Sauce Labs](http://saucelabs.com). These default settings should work fine for most people, but if you are running a local Selenium instance, be sure to check out the [full documentation on configuration options](https://github.com/theintern/intern/wiki/Configuring-Intern).
 
-The Dojo AMD loader used by Intern needs to be able to find our application code. We can add any AMD configuration options supported by the Dojo loader inside a `loader` option in our configuration file, so let's add one for our `app` package. Let's also add an `environments` array containing objects that specify what browsers to target for integration testing. These browser objects correspond to versions supported by [Selenium](http://docs.seleniumhq.org/):
+The Dojo AMD loader used by Intern needs to be able to find our application code. We can add any AMD configuration options supported by the Dojo loader inside a `loader` option in the configuration file, so let's add one for our `app` package. Let's also add an `environments` array containing objects that specify what browsers to target for integration testing. These browser objects correspond to versions supported by [Selenium](http://docs.seleniumhq.org/):
 
 ```js
 // Learn more about configuring this file at <https://github.com/theintern/intern/wiki/Configuring-Intern>.
@@ -102,7 +102,7 @@ define({
 	},
 
 	// Whether or not to start Sauce Connect to interface with Sauce Labs before running tests
-	useSauceConnect: true
+	useSauceConnect: true,
 
 	// Browsers to run integration testing against. Note that version numbers must be strings if used with Sauce
 	// OnDemand. Options that will be permutated are browserName, version, platform, and platformVersion; any other
@@ -123,7 +123,7 @@ define({
 });
 ```
 
-We've now configured Intern! The next step is to write tests and tell Intern to run them.
+We've now configured Intern! The next step is to write tests and to tell Intern to run them.
 
 ## Step 3: Write a unit test
 
@@ -143,9 +143,9 @@ define([
 
 *Note: Future versions of Intern will contain extra Grunt tasks to assist with generating new test modules.*
 
-This bit of boilerplate loads the object syntax interface as `registerSuite`, the demo application’s Hello World code module as `hello`, and the assertion interface as `assert`. The object interface is what lets us register tests within Intern, and the assertion interface is what lets us *assert* that a variable (or function) returns the expected, correct, value.
+This bit of boilerplate loads the object syntax interface as `registerSuite`, the demo application’s code module as `hello`, and the assertion interface as `assert`. The object interface is what lets us register tests within Intern, and the assertion interface is what lets us *assert* that a variable (or function) returns the expected, correct, value.
 
-Intern test modules can register one more more **test suites**, which can each contain any number of **test cases**. Now that the basics of our `hello.js` test module are in place, the next step is to use `registerSuite` to do just that - register a suite with test cases that test our demo app. Since we are writing a unit test, let’s test the `hello.greet` method.
+Intern test modules can register one or more **test suites**, which can each contain any number of **test cases**. Now that the basics of our `hello.js` test module are in place, the next step is to use `registerSuite` to do just that - register a suite with test cases that test our demo app. Since we are writing a unit test, let’s test the `hello.greet` method.
 
 Looking at the source code for `app/hello`, we can see that when `greet` is called it will return the string `"Hello, world!"` if no name is passed, or `"Hello, <name>!"` if a name is passed. We need to make sure we test both of these code branches. If we’ve done it right, our test code will end up looking something like this:
 
@@ -159,7 +159,7 @@ define([
 		name: 'hello',
 
 		'greet': function () {
-			assert.strictEqual(hello.greet('Murray')), 'Hello, Murray!', 'hello.greet should return a greeting for the person named in the first argument');
+			assert.strictEqual(hello.greet('Murray'), 'Hello, Murray!', 'hello.greet should return a greeting for the person named in the first argument');
 			assert.strictEqual(hello.greet(), 'Hello, world!', 'hello.greet with no arguments should return a greeting to "world"');
 		}
 	});
@@ -178,18 +178,19 @@ The final step for writing our unit test is to add information to the Intern con
 
 suites: ['app/tests/hello']
 
-// ...
 ```
 
-**Checkpoint:** At this point in the tutorial, Intern is downloaded and configured and we have a basic unit test module written. To run the tests in a local browser, visit the following url and inspect the console (making sure to adjust the path to `app` appropriately):
+#### Checkpoint 
+At this point in the tutorial, Intern is downloaded and configured and we have a basic unit test module written. To run the tests in a local browser, visit the following url and inspect the console (making sure to adjust the path to `app` appropriately):
 
 ```
-http://localhost/app/intern/client.html?config=app/tests/intern
+http://localhost/intern-tutorial/intern/client.html?config=app/tests/intern
 ```
 
-To run the tests using NodeJS, run the following command from the `app` directory:
+To run the tests using NodeJS, kick off `client` from the `app` directory:
 
 ```bash
+cd app
 node intern/client.js config=app/tests/intern
 ```
 
@@ -254,7 +255,7 @@ Because functional tests mimic user interaction, so they need an html page to lo
 </html>
 ```
 
-On the HTML page above, we require our application's `hello` module as "hello" and hook up two click event handlers that call `hello.alert` with different arguments. We also set a global `ready` variable to `true` once our module is loaded; that way, our functional test can wait for that global variable to become truthy before continuing.
+On the HTML page above, we require our application's `hello` module as "hello" and hook up two click handlers that each call `hello.alert` - one with a name argument, one without a name argument . We also set a global `ready` variable to `true` once our module is loaded; that way, our functional test can wait for that global variable to become truthy before continuing.
 
 Now, let's switch back to the functional test file at `app/tests/functional/hello`. The first step in writing any Intern test is to register a suite using the test interface - in this case, the *object* interface that was required as `registerSuite`. Because we want to test DOM interaction, let's add a single test case for our application's `hello.greet` method, which should trigger an alert.
 
@@ -274,7 +275,7 @@ define([
 });
 ```
 
-In a functional test, a `remote` object is exposed that has methods for interacting with the remote browser environment. This `remote` object corresponds to the standard [WebDriver API](http://www.w3.org/TR/webdriver/) with a fluid, promises-wrapped [WD.js](https://github.com/admc/wd). Using these methods, we can load an HTML page, interact with it, and make assertions just like unit testing. Looking again at the source code for `app/hello`, we can see that when `alert` is called it will alert `"Hello, world!"` if no name is passed, or `"Hello, <name>!"` if a name is passed. If we’ve done it right, our functional test code will end up looking something like this:
+In a functional test, a `remote` object is exposed that has methods for interacting with the remote browser environment. This `remote` object corresponds to the standard [WebDriver API](http://www.w3.org/TR/webdriver/) with a fluid, promises-wrapped [WD.js](https://github.com/admc/wd). Using these methods, we can load an HTML page, interact with it, and make assertions just like unit testing. Looking again at the source code for `app/hello`, we can see that when `alert` is called it will alert `"Hello, world!"` if no name is passed, or `"Hello, <name>!"` if a name is passed. We need to make sure to test both of these logic paths, and can do so by mimicking a "click" on each of buttons we created on our HTML page. We can then assert that the alerted message is what we expect. If we’ve done it right, our functional test code will end up looking something like this:
 
 ```js
 define([
@@ -311,7 +312,7 @@ define([
 
 *Note: See [this link](https://github.com/admc/wd#supported-methods) for all methods available for functional testing.*
 
-In the code above, we first use `remote.get` to load our HTML page using the `require` module. We then use `remote.waitForCondition` to wait at most five seconds for the global `ready` variable to become truth on the page - a simple manual mechanism for knowing when the remote HTML page is fully loaded. Next, we use a series of [WD.js](https://github.com/admc/wd) commands to interact with the remote DOM - we find an element with an id of "helloWorld", click it, then wait for an alert window to show as expected. Each `remote` method returns a promise, which makes asserting aspects of our application very simple. Here, we add a callback to the `alertText` method, which receives the alerted message. We use the standard assertion interface to verify that the message is what we expect, then repeat the process for the button with an id of "helloFriend."
+In the code above, we first use `remote.get` to load our HTML page using the `require` module. We then use `remote.waitForCondition` to wait at most five seconds for the global `ready` variable to become truthy on the page - a simple manual mechanism for knowing when the remote HTML page is fully loaded. Next, we use a series of [WD.js](https://github.com/admc/wd) commands to interact with the remote DOM - we find an element with an id of "helloWorld", click it, then wait for an alert window to show as expected. Each `remote` method returns a promise, which makes asserting aspects of our application very simple. Here, we add a callback to the `alertText` method, which receives the alerted message. We use the standard assertion interface to verify that the message is what we expect. We then repeat the entire process for the button with an id of "helloFriend."
 
 The final step for writing our functional test is to add information to the Intern configuration file we previously created so that Intern can find our new test module. Let's add the a `functionalSuites` array containing the AMD [module identifier](https://github.com/amdjs/amdjs-api/wiki/AMD#id-) of our test to the config file at `app/tests/intern.js`:
 
@@ -327,7 +328,7 @@ That's it! We are now ready to run our tests again, this time using a Selenium i
 
 ## Step 5: Running the tests
 
-At this point, we have tests written and Intern configured. We are now ready to actually run our tests! Intern can run tests using several different included mechanisms. We've already gone over how to [use the browser client and node client]() - useful test run methods while developing test cases. For code coverage and multi-browser testing, however, we will use a hosted Selenium instance knows as [Sauce Labs](http://saucelabs.com). This is made possible by Intern's auto test runner at `intern/runner.js`. First, we need to expose our Sauce Lab credentials to the environment. This information can also be hardcoded into your Intern configuration file.
+At this point, we have tests written and Intern configured. We are now ready to actually run our tests! Intern can run tests using several different included mechanisms. We've already gone over how to [use the browser client and node client](#checkpoint) - useful test run methods while developing test cases. For code coverage and multi-browser testing, however, we will use a hosted Selenium instance knows as [Sauce Labs](http://saucelabs.com). This is made possible by Intern's auto test runner at `intern/runner.js`. First, we need to expose our Sauce Lab credentials to the environment. This information can also be hardcoded into your Intern configuration file.
 
 ```bash
 export SAUCE_USERNAME=<your sauce labs username>
@@ -343,6 +344,7 @@ node runner.js config=app/tests/intern
 
 *Note: For full documentation on arguments that can be passed when running tests, check out the [wiki page](https://github.com/theintern/intern/wiki/Running-Tests).*
 
+If all goes according to plan, you should see the output of the test run in the console.
 
 ## Step 6: Party
 
