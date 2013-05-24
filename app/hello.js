@@ -11,7 +11,7 @@ define([], function () {
 		},
 
 		alert: function (name) {
-			alert(this.hello(name));
+			alert(this.greet(name));
 		}
 	};
 });
