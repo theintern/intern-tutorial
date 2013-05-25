@@ -2,9 +2,14 @@
 
 # Intern tutorial
 
-In this tutorial, we will walk through how to set up, write tests, and run tests using Intern. This repository contains a very basic Hello World demo “application” that we’ll be building on until we’ve made it fully tested.
+In this tutorial, we will walk through how to set up, write tests, and run tests using Intern. This repository contains a very basic Hello World demo “application” that we’ll be using as an example to build on. In order to complete this tutorial, you will need the following:
 
-To get started, download the demo application by cloning this repository:
+* A Bourne-compatible shell, like bash or zsh (or knowledge to execute equivalent commands in your environment)
+* [Git](http://gitscm.com/)
+* [Node 0.8+](http://nodejs.org/)
+* A [free Sauce Labs account](https://saucelabs.com/signup)
+
+Once you have all the necessary prerequisites, download the demo application by cloning this repository:
 
 ```bash
 git clone https://github.com/theintern/intern-tutorial.git
@@ -18,7 +23,7 @@ Intern supports two types of tests: unit tests and functional tests. **Unit test
 
 ## Step 1: Download Intern
 
-The recommended filesystem structure for Intern is to install it as a sibling to whatever package is being tested. Our demo app is in the `intern-tutorial/app` directory, so we will install Intern to `intern-tutorial/intern`.
+The recommended filesystem structure when working with Intern is to install it as a sibling to whatever package is being tested. Our demo app is in the `intern-tutorial/app` directory, so we will install Intern to `intern-tutorial/intern`.
 
 First, clone the Intern repository as a sibling of the `app` directory, making sure to also retrieve its submodules using git’s `--recursive` flag:
 
@@ -37,99 +42,78 @@ cd ..
 
 *Note: Improved installation using `npm` is coming in version 1.1.*
 
-That’s it! We now have a complete installation of Intern ready to go. Next, we need to configure Intern and start writing tests for our demo application.
+That’s it! Installation is complete.
 
 ## Step 2: Configuring Intern
 
-Intern needs to be configured so it can find our tests and know how we want to run them. This is done by creating an Intern configuration file, which is just a regular AMD module with no dependencies. Before writing a configuration file or any tests, we first need to create a place for them to live. Normally, the configuration file and tests for a given package are put within a `tests` subdirectory for that package, so create one at `app/tests`:
+Intern needs to be configured so it can find our tests and know how we want to run them. This is done by creating an Intern configuration file, which is a regular AMD module that defines a configuration object. Before creating this file, we first need to create a place for it to live. By convention, the configuration file and tests for a given package are put within a `tests` subdirectory for that package, so create one for our application at `app/tests`:
 
 ```bash
 mkdir app/tests
 ```
 
-Next, let's make our new configuration file at `app/tests/intern.js` and paste the following skeleton into it:
+Next, copy the example configuration file from Intern to `app/tests/intern.js`:
 
-```js
-define({
-	// The port on which the instrumenting proxy will listen
-	proxyPort: 9000,
-
-	// A fully qualified URL to the Intern proxy
-	proxyUrl: 'http://localhost:9000/',
-
-	// Default desired capabilities for all environments.
-	capabilities: {
-		'selenium-version': '2.30.0'
-	},
-
-	// Connection information for the remote WebDriver service. If using Sauce Labs, keep your username and password
-	// in the SAUCE_USERNAME and SAUCE_ACCESS_KEY environment variables unless you are sure you will NEVER be
-	// publishing this configuration file somewhere
-	webdriver: {
-		host: 'localhost',
-		port: 4444
-	},
-
-	// Whether or not to start Sauce Connect to interface with Sauce Labs before running tests
-	useSauceConnect: true
-});
+```bash
+cp intern/tests/example.intern.js app/tests/intern.js
 ```
 
-In the code above, we've initially added default settings necessary run tests using a Selenium instance, and in this tutorial, we'll be using a hosted Selenium service called [Sauce Labs](http://saucelabs.com). These default settings should work fine for most people, but if you are running a local Selenium instance, be sure to check out the [full documentation on configuration options](https://github.com/theintern/intern/wiki/Configuring-Intern).
-
-The Dojo AMD loader used by Intern needs to be able to find our application code. We can add any AMD configuration options supported by the Dojo loader inside a `loader` option in the configuration file, so let's add one for our `app` package. Let's also add an `environments` array containing objects that specify what browsers to target for integration testing. These browser objects correspond to versions supported by [Selenium](http://docs.seleniumhq.org/):
+This example configuration provides us with some default settings that work well for most projects. The remaining configuration that needs to be done in order for Intern to work with our project is to tell the loader that our `app` package exists. Within the example configuration, this means changing `packages: [ 'myPackage' ]` to `packages: [ 'app' ]`:
 
 ```js
-// Learn more about configuring this file at <https://github.com/theintern/intern/wiki/Configuring-Intern>.
-define({
-	// The port on which the instrumenting proxy will listen
-	proxyPort: 9000,
-
-	// A fully qualified URL to the Intern proxy
-	proxyUrl: 'http://localhost:9000/',
-
-	// Default desired capabilities for all environments.
-	capabilities: {
-		'selenium-version': '2.30.0'
-	},
-
-	// Connection information for the remote WebDriver service. If using Sauce Labs, keep your username and password
-	// in the SAUCE_USERNAME and SAUCE_ACCESS_KEY environment variables unless you are sure you will NEVER be
-	// publishing this configuration file somewhere
-	webdriver: {
-		host: 'localhost',
-		port: 4444
-	},
-
-	// Whether or not to start Sauce Connect to interface with Sauce Labs before running tests
-	useSauceConnect: true,
-
-	// Browsers to run integration testing against. Note that version numbers must be strings if used with Sauce
-	// OnDemand. Options that will be permutated are browserName, version, platform, and platformVersion; any other
-	// capabilities options specified for an environment will be copied as-is
-	environments: [
-		{ browserName: 'internet explorer', version: '10', platform: 'Windows 2012' },
-		{ browserName: 'firefox', version: '19', platform: [ 'Linux', 'Mac 10.6', 'Windows 2012' ] },
-		{ browserName: 'chrome', platform: [ 'Linux', 'Mac 10.8', 'Windows 2008' ] },
-		{ browserName: 'safari', version: '6', platform: 'Mac 10.8' }
-	],
-
-	// Configuration options for the module loader; any AMD configuration options supported by the Dojo loader can be
-	// used here
+	// ...
 	loader: {
 		// Packages that should be registered with the loader in each testing environment
 		packages: [ 'app' ]
-	}
-});
+	},
+	// ...
 ```
 
-We've now configured Intern! The next step is to write tests and to tell Intern to run them.
+*Note: The `loader` object in the configuration file accepts any configuration options that are understood by the Dojo AMD loader. If you need to include additional packages, map modules, etc., this is the place to do it.*
+
+We’ll be doing a little more configuration shortly when we start adding tests, but for now, we have a complete configuration. You can verify that everything is working by running the Node.js client:
+
+```bash
+node intern/client.js config=app/tests/intern
+```
+
+It should output:
+
+```
+Defaulting to "console" reporter
+0/0 tests passed
+```
+
+Now that we’ve configured Intern, we need to create a test module which will contain the actual tests for our application.
 
 ## Step 3: Write a unit test
 
 There are several different popular syntaxes for writing unit tests, and Intern comes with built-in support for the three most common: [BDD](https://github.com/theintern/intern/wiki/Writing-Tests#bdd), [TDD](https://github.com/theintern/intern/wiki/Writing-Tests#tdd), and [object](https://github.com/theintern/intern/wiki/Writing-Tests#object). In this tutorial, we will use the **object** syntax, but this is an individual preference. All of these interfaces support the same functionality, so pick whichever one you think is the clearest when you start writing your own tests!
 
-We first need to create a test module which will contain the actual tests for our application. Intern’s test modules are written using the AMD format and are typically split up so that there’s one test module for each corresponding code module being tested. We have one code module in our demo app (`app/hello`), so create a new test module at `app/tests/hello.js` and paste the following boilerplate into it:
+Before getting any further into writing tests, we need to take a moment to review the terminology that is used by Intern:
+
+* An **assertion** is a function call that verifies that a variable contains (or a function returns) an expected, correct, value (e.g. `assert.isTrue(someVariable, 'someVariable should be true')`)
+* A **test interface** is a programming interface for registering tests with Intern
+* A **test case** (or, just **test**) is a function that makes calls to application code and makes assertions about what it should have done
+* A **test suite** is a collection of tests (and, optionally, sub–test-suites) that are related to each other
+* A **test module** is a JavaScript module in AMD format that contains test suites
+
+These pieces can be visualized in a hierarchy, like this:
+
+* test module
+	* test suite
+		* test suite
+			* ...
+		* test case
+			* assertion
+			* ...
+		* ...
+	* test suite
+	* ...
+* test module
+* ...
+
+Test modules are typically split up so that there’s one test module for each corresponding code module being tested. We have one code module in our demo app (`app/hello`), so we’ll create a new test module at `app/tests/hello.js` and put the following boilerplate into it:
 
 ```js
 define([
@@ -143,9 +127,9 @@ define([
 
 *Note: Future versions of Intern will contain extra Grunt tasks to assist with generating new test modules.*
 
-This bit of boilerplate loads the object syntax interface as `registerSuite`, the demo application’s code module as `hello`, and the assertion interface as `assert`. The object interface is what lets us register tests within Intern, and the assertion interface is what lets us *assert* that a variable (or function) returns the expected, correct, value.
+This bit of code loads the object test interface as `registerSuite`, the assertion interface as `assert`, and the code we want to test as `hello`.
 
-Intern test modules can register one or more **test suites**, which can each contain any number of **test cases**. Now that the basics of our `hello.js` test module are in place, the next step is to use `registerSuite` to do just that - register a suite with test cases that test our demo app. Since we are writing a unit test, let’s test the `hello.greet` method.
+Now that the basics of our `hello` test module are in place, the next step is to use `registerSuite` to register a test suite with some tests for our app. We’ll start by testing the `hello.greet` method.
 
 Looking at the source code for `app/hello`, we can see that when `greet` is called it will return the string `"Hello, world!"` if no name is passed, or `"Hello, <name>!"` if a name is passed. We need to make sure we test both of these code branches. If we’ve done it right, our test code will end up looking something like this:
 
@@ -165,38 +149,38 @@ define([
 	});
 });
 ```
-*Note: Intern offers hooks that can be utilized within our a to run arbitrary code at various points during a test run - more information can be found on the [Writing Tests wiki page](https://github.com/theintern/intern/wiki/Writing-Tests).*
 
-In the code above, we’ve registered a new suite for our `hello` module named “hello”, a new test case for the `greet` method named “greet”, and wrote two assertions: one where we call `greet` with no arguments, and one where we call `greet` with one argument. 
+*Note: This example test uses `assert.strictEqual`, which is just one of many available assertions. For a complete list of available methods, see the [ChaiJS documentation](http://chaijs.com/api/).*
 
-**Assertions** are statements that can be used to verify some logic about the target being tested. Here, we're using `assert.strictEqual` to prove strict equality of the return value of `hello.greet` and an expected value, yet other assertion methods exist. Such additional methods can be accessed by requiring Intern's different assertion interfaces at `intern/chai!assert`, `intern/chai!should`, and `intern/chai!expect`. For a complete list of available methods, see the [ChaiJS documentation](http://chaijs.com/api/).
+In this test module, we’ve registered a new suite for our `hello` module and named it “hello”, written a new test case for the `greet` method and named it “greet”, and added two assertions: one where we call `greet` and pass an argument, and one where we call `greet` without any argument. If either of these assertions fails, they will throw an error and the test case will be considered failed at that point.
 
-The final step for writing our unit test is to add information to the Intern configuration file we previously created so that Intern can find our new test module. Let's add the a `suites` array containing the AMD [module identifier](https://github.com/amdjs/amdjs-api/wiki/AMD#id-) of our test to the config file at `app/tests/intern.js`:
+Each of our assertions also contains a message that describes what logic the assertion is actually checking. Similar to good code comments that describe *why* a piece of code exists, these messages are used to describe the business expectation behind an assertion rather than simply describing the assertion. For instance, “Calling hello.greet('Murray') should return "Hello, Murray!"” would be a bad assertion message because it just describes what the assertion is doing, rather than describing the desired outcome. With the message we’ve used in the code above, if the `hello.greet` method were changed in the future to return `"Hi, <name>!"` instead, it would be clear that the test itself needed to be updated because the code still fulfils the original business logic. Similarly, if the method were changed to return `"You suck, <name>!"` instead, it would then be clear that the application code was updated incorrectly.
+
+The final step when writing a new test module is to add the [module’s identifier](https://github.com/amdjs/amdjs-api/wiki/AMD#id-) to our configuration file so that it is loaded when we run Intern. To do this, in the `suites` array, add the string `'app/tests/hello'`:
 
 ```js
-// ... 
-
-suites: ['app/tests/hello']
-
+	// ...
+	// Unit test modules to run in each browser
+	suites: [ 'app/tests/hello' ],
+	// ...
 ```
 
-#### Checkpoint 
-At this point in the tutorial, Intern is downloaded and configured and we have a basic unit test module written. To run the tests in a local browser, visit the following url and inspect the console (making sure to adjust the path to `app` appropriately):
+Now if we go back and run the same client.js command from the end of Step 2, we will actually see our tests running and passing:
 
 ```
-http://localhost/intern-tutorial/intern/client.html?config=app/tests/intern
+Defaulting to "console" reporter
+PASS: main - hello - greet (2ms)
+1/1 tests passed
+1/1 tests passed
 ```
 
-To run the tests using NodeJS, kick off `client` from the `app` directory:
+*Note: The “tests passed” line appears twice because it is displayed once at the end of each test suite, then again at the end of the entire test run with the total count. Since we only have one test suite, the two values are identical.`
 
-```bash
-cd app
-node intern/client.js config=app/tests/intern
-```
+These same tests can be run directly within a Web browser by navigating to `http://path/to/intern-tutorial/intern/client.html?config=app/tests/intern` and looking in the Web console for the results. (In fact, you don’t need Node.js to be installed at all to use `client.html`!)
 
-## Step 4: Write a Functional Test
+## Step 4: Write a functional test
 
-Functional tests work differently than unit tests in that they mimic *user interaction* and work by issuing commands to browsers via a WebDriver browser extension; an external server loads different browser virtual machines, mimics user action based on these commands, and processes the result. In this tutorial, we'll use a cloud service that provides an instance of such a server known as [Sauce Labs](http://saucelabs.com). If instead you desire to set up your own server instance locally, [these instructions](http://docs.seleniumhq.org/docs/03_webdriver.jsp#running-standalone-selenium-server-for-use-with-remotedrivers) should get you started. 
+Functional tests work differently than unit tests in that they mimic *user interaction* and work by issuing commands to browsers via a WebDriver browser extension; an external server loads different browser virtual machines, mimics user action based on these commands, and processes the result. In this tutorial, we'll use a cloud service that provides an instance of such a server known as [Sauce Labs](http://saucelabs.com). If instead you desire to set up your own server instance locally, [these instructions](http://docs.seleniumhq.org/docs/03_webdriver.jsp#running-standalone-selenium-server-for-use-with-remotedrivers) should get you started.
 
 Let's begin by making a new folder inside our package's `tests` directory to hold our functional test at `app/tests/functional`:
 
@@ -317,7 +301,7 @@ In the code above, we first use `remote.get` to load our HTML page using the `re
 The final step for writing our functional test is to add information to the Intern configuration file we previously created so that Intern can find our new test module. Let's add the a `functionalSuites` array containing the AMD [module identifier](https://github.com/amdjs/amdjs-api/wiki/AMD#id-) of our test to the config file at `app/tests/intern.js`:
 
 ```js
-// ... 
+// ...
 
 functionalSuites: ['app/tests/functional/hello']
 
