@@ -174,22 +174,61 @@ PASS: main - hello - greet (2ms)
 1/1 tests passed
 ```
 
-*Note: The “tests passed” line appears twice because it is displayed once at the end of each test suite, then again at the end of the entire test run with the total count. Since we only have one test suite, the two values are identical.`
+*Note: The “tests passed” line appears twice because it is displayed once at the end of each test suite, then again at the end of the entire test run with the total count. Since we only have one test suite, the two values are identical.*
 
-These same tests can be run directly within a Web browser by navigating to `http://path/to/intern-tutorial/intern/client.html?config=app/tests/intern` and looking in the Web console for the results. (In fact, you don’t need Node.js to be installed at all to use `client.html`!)
+These same tests can be run directly within a Web browser by navigating to `http://path/to/intern-tutorial/intern/client.html?config=app/tests/intern` and looking in the Web console for the results. (In fact, you don’t need Node.js to be installed at all to use `client.html`.)
 
 ## Step 4: Write a functional test
 
-Functional tests work differently than unit tests in that they mimic *user interaction* and work by issuing commands to browsers via a WebDriver browser extension; an external server loads different browser virtual machines, mimics user action based on these commands, and processes the result. In this tutorial, we'll use a cloud service that provides an instance of such a server known as [Sauce Labs](http://saucelabs.com). If instead you desire to set up your own server instance locally, [these instructions](http://docs.seleniumhq.org/docs/03_webdriver.jsp#running-standalone-selenium-server-for-use-with-remotedrivers) should get you started.
+Functional tests are different from unit tests in that they *mimic user interaction* by sending commands to browsers using an external server instead of running directly in the environment being tested. This enables us to generate real DOM events and test UI interactions just like a real user, with no JavaScript security sandbox limitations. For this tutorial, we’ll be testing some code that generates an `alert` box, which would not be testable by a unit test running in the browser.
 
-Let's begin by making a new folder inside our package's `tests` directory to hold our functional test at `app/tests/functional`:
+Intern’s functional testing (and its continuous integration) is based on the [standard WebDriver protocol](http://www.w3.org/TR/webdriver/), so you can either use a [Sauce Labs](http://saucelabs.com) account or [set up your own WebDriver server](http://docs.seleniumhq.org/docs/03_webdriver.jsp#running-standalone-selenium-server-for-use-with-remotedrivers). Because Sauce Labs is much easier to use, this tutorial assumes you are using Sauce.
+
+To get started, create a new directory to hold the functional tests (in order to differentiate them from our normal unit tests) at `app/tests/functional`:
 
 ```bash
-cd app/tests
-mkdir functional
+mkdir app/tests/functional
 ```
 
-We first need to create a test module which will contain the actual tests for our application. Similarly to unit tests, functional tests use any of the supported test syntaxes: [BDD](https://github.com/theintern/intern/wiki/Writing-Tests#bdd), [TDD](https://github.com/theintern/intern/wiki/Writing-Tests#tdd), and [object](https://github.com/theintern/intern/wiki/Writing-Tests#object). Create a new test module at `app/tests/functional/hello.js` and paste the following boilerplate into it:
+TODO: Pre-create an index.html for the app instead of this.
+
+```html
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>app/hello test scaffold</title>
+	</head>
+	<body>
+		<button id="helloWorld">Greet</button>
+		<button id="helloFriend">Greet Murray</button>
+
+		<script src="//ajax.googleapis.com/ajax/libs/dojo/1.9.0/dojo/dojo.js"></script>
+		<script>
+			var ready;
+
+			require({ packages: [ { name: 'app', location: location.pathname.replace(/[^\/]*$/, 'app') } ] });
+			require([ 'intern/dojo/on', 'app/hello' ], function (on, hello) {
+				on('helloWorld', 'click', function () {
+					hello.alert();
+				});
+				on('helloFriend', 'click', function () {
+					hello.alert('Murray');
+				});
+
+				ready = true;
+			});
+		</script>
+	</body>
+</html>
+```
+
+In this
+
+On the HTML page above, we require our application's `hello` module as "hello" and hook up two click handlers that each call `hello.alert` - one with a name argument, one without a name argument . We also set a global `ready` variable to `true` once our module is loaded; that way, our functional test can wait for that global variable to become truthy before continuing.
+
+
+Next, create a test module at `app/tests/functional/hello.js` with the following boilerplate:
 
 ```js
 define([
@@ -201,45 +240,8 @@ define([
 });
 ```
 
-*Note: Future versions of Intern will contain extra Grunt tasks to assist with generating new test modules.*
+Just like our unit test before, we’re going to use the object test interface and assert-style assertions. However, instead of loading any application code, we’ve loaded the special `require` module instead, which we will use to generate a URL to load into the browser.
 
-The boilerplate above loads the object syntax intrface as `registerSuite`, the assertion interface as `assert`, and a module we'll use to require the HTML page we wish test as `require`.
-
-Because functional tests mimic user interaction, so they need an html page to load into a remote browser environment. The actual test JavaScript code isn't exposed to this remote browser environment, so this html page **should include script tags for all necessary JavaScript**. Let's create a basic HTML page at `app/tests/functional/hello.html` and add the following code to it:
-
-```html
-<!DOCTYPE html>
-<html>
-	<head>
-		<!--
-		We pull in dojo here only for its AMD loader, since hello.js is an AMD module.
-		Note: Intern doesn't require that your application uses Dojo at all.
-		-->
-		<script src="//ajax.googleapis.com/ajax/libs/dojo/1.9.0/dojo/dojo.js"></script>
-		<script>
-			var ready;
-
-			require(['../../hello.js'], function (hello) {
-				document.getElementById('helloWorld').addEventListener('click', function () {
-					hello.alert();
-				}, false);
-				document.getElementById('helloFriend').addEventListener('click', function () {
-					hello.alert('friend');
-				}, false);
-
-				// when everything is done, set a global ready flag
-				ready = true;
-			});
-		</script>
-	</head>
-	<body>
-		<button id="helloWorld">hello world</button>
-		<button id="helloFriend">hello friend</button>
-	</body>
-</html>
-```
-
-On the HTML page above, we require our application's `hello` module as "hello" and hook up two click handlers that each call `hello.alert` - one with a name argument, one without a name argument . We also set a global `ready` variable to `true` once our module is loaded; that way, our functional test can wait for that global variable to become truthy before continuing.
 
 Now, let's switch back to the functional test file at `app/tests/functional/hello`. The first step in writing any Intern test is to register a suite using the test interface - in this case, the *object* interface that was required as `registerSuite`. Because we want to test DOM interaction, let's add a single test case for our application's `hello.greet` method, which should trigger an alert.
 
