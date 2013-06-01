@@ -142,7 +142,7 @@ define([
 	registerSuite({
 		name: 'hello',
 
-		'greet': function () {
+		greet: function () {
 			assert.strictEqual(hello.greet('Murray'), 'Hello, Murray!', 'hello.greet should return a greeting for the person named in the first argument');
 			assert.strictEqual(hello.greet(), 'Hello, world!', 'hello.greet with no arguments should return a greeting to "world"');
 		}
@@ -180,7 +180,7 @@ These same tests can be run directly within a Web browser by navigating to `http
 
 ## Step 4: Write a functional test
 
-Functional tests are different from unit tests in that they *mimic user interaction* by sending commands to browsers using an external server instead of running directly in the environment being tested. This enables us to generate real DOM events and test UI interactions just like a real user, with no JavaScript security sandbox limitations. For this tutorial, we’ll be testing some code that generates an `alert` box, which would not be testable by a unit test running in the browser.
+Functional tests are different from unit tests in that they *mimic user interaction* by sending commands to browsers using an external server instead of running directly in the environment being tested. This enables us to generate real DOM events and test UI interactions just like a real user, with no JavaScript security sandbox limitations. As well as enabling testing of sandbox-restricted actions like [file uploads](http://sauceio.com/index.php/2012/03/selenium-tips-uploading-files-in-remote-webdriver/), functional testing also allows us to test interactions that span multiple pages and interactions with third party sites (like OAuth authorization flows). For this tutorial, we’ll be testing some code that generates a real `alert` box, which would not be possible with just a unit test running in the browser’s JavaScript sandbox.
 
 Intern’s functional testing (and its continuous integration) is based on the [standard WebDriver protocol](http://www.w3.org/TR/webdriver/), so you can either use a [Sauce Labs](http://saucelabs.com) account or [set up your own WebDriver server](http://docs.seleniumhq.org/docs/03_webdriver.jsp#running-standalone-selenium-server-for-use-with-remotedrivers). Because Sauce Labs is much easier to use, this tutorial assumes you are using Sauce.
 
@@ -190,43 +190,8 @@ To get started, create a new directory to hold the functional tests (in order to
 mkdir app/tests/functional
 ```
 
-TODO: Pre-create an index.html for the app instead of this.
-
-```html
-<!DOCTYPE html>
-<html>
-	<head>
-		<meta charset="utf-8">
-		<title>app/hello test scaffold</title>
-	</head>
-	<body>
-		<button id="helloWorld">Greet</button>
-		<button id="helloFriend">Greet Murray</button>
-
-		<script src="//ajax.googleapis.com/ajax/libs/dojo/1.9.0/dojo/dojo.js"></script>
-		<script>
-			var ready;
-
-			require({ packages: [ { name: 'app', location: location.pathname.replace(/[^\/]*$/, 'app') } ] });
-			require([ 'intern/dojo/on', 'app/hello' ], function (on, hello) {
-				on('helloWorld', 'click', function () {
-					hello.alert();
-				});
-				on('helloFriend', 'click', function () {
-					hello.alert('Murray');
-				});
-
-				ready = true;
-			});
-		</script>
-	</body>
-</html>
-```
-
-In this
-
-On the HTML page above, we require our application's `hello` module as "hello" and hook up two click handlers that each call `hello.alert` - one with a name argument, one without a name argument . We also set a global `ready` variable to `true` once our module is loaded; that way, our functional test can wait for that global variable to become truthy before continuing.
-
+TODO: Pre-create an index.html for the app instead of this. There should not need to be extra code in the HTML for the unit test to work (referring to the `ready` flag here).
+TODO: This alert test really sucks. I do not want to have to explain to people that they need to make sure the alert is dismissed regardless of whether the assertion succeeds or fails, I don’t want to explain that the `alertText` function checks to see if the alert box exists, and this entire method could be unit tested just by stubbing out `window.alert`. We need a better choice of UI interaction. Try some kind of login form that replaces something in the header with the greeting.
 
 Next, create a test module at `app/tests/functional/hello.js` with the following boilerplate:
 
@@ -236,32 +201,21 @@ define([
 	'intern/chai!assert',
 	'require'
 ], function (registerSuite, assert, require) {
-
-});
-```
-
-Just like our unit test before, we’re going to use the object test interface and assert-style assertions. However, instead of loading any application code, we’ve loaded the special `require` module instead, which we will use to generate a URL to load into the browser.
-
-
-Now, let's switch back to the functional test file at `app/tests/functional/hello`. The first step in writing any Intern test is to register a suite using the test interface - in this case, the *object* interface that was required as `registerSuite`. Because we want to test DOM interaction, let's add a single test case for our application's `hello.greet` method, which should trigger an alert.
-
-```js
-define([
-	'intern!object',
-	'intern/chai!assert',
-	'require'
-], function (registerSuite, assert, require) {
 	registerSuite({
-		name: 'hello functional',
+		name: 'app/hello (functional)',
 
-		'greet': function () {
+		alert: function () {
 
 		}
-	});
+	})
 });
 ```
 
-In a functional test, a `remote` object is exposed that has methods for interacting with the remote browser environment. This `remote` object corresponds to the standard [WebDriver API](http://www.w3.org/TR/webdriver/) with a fluid, promises-wrapped [WD.js](https://github.com/admc/wd). Using these methods, we can load an HTML page, interact with it, and make assertions just like unit testing. Looking again at the source code for `app/hello`, we can see that when `alert` is called it will alert `"Hello, world!"` if no name is passed, or `"Hello, <name>!"` if a name is passed. We need to make sure to test both of these logic paths, and can do so by mimicking a "click" on each of buttons we created on our HTML page. We can then assert that the alerted message is what we expect. If we’ve done it right, our functional test code will end up looking something like this:
+Just like our unit test before, we’re using the object test interface and assert-style assertions. However, instead of loading any application code directly, we’ve loaded the special `require` module which we’ll use to generate a URL to load into the browser.
+
+To facilitate functional testing, an object is exposed to tests at `this.remote` which provides an interface for interacting with the remote environment. Using these methods, we can load a Web page, interact with it, and retrieve data from it to assert that our actions caused the expected result. Since all calls to the remote browser are asynchronous, this interface allows us to chain commands (like jQuery) and retrieve results using standard promises-style `then` calls. When we make a call, it is enqueued and executed once all the previous commands have completed. If this description is a little confusing, don’t worry—it should be clearer once we look at some code.
+
+Unlike the unit test for the `greet` method, we only need to test `hello.alert` once, since all it does is call back to `greet` and we’re already fully testing that method with a unit test. To do this, we’ll first TODO: describe the actions given better index HTML, and noting that we already describe all the code *after* the code :\. Once we’re done, our test will look something like this:
 
 ```js
 define([
@@ -270,25 +224,19 @@ define([
 	'require'
 ], function (registerSuite, assert, require) {
 	registerSuite({
-		name: 'hello functional',
+		name: 'app/hello (functional)',
 
-		'greet': function () {
-			// load an html page into the remote browser environment
+		alert: function () {
 			return this.remote
 				.get(require.toUrl('./hello.html'))
+				// TODO: Use waitForElementById
 				.waitForCondition('ready', 5000)
 				.elementById('helloWorld')
 					.clickElement()
 				.end()
 				.alertText().then(function (text) {
+					// TODO: i18n?!
 					assert.strictEqual(text, 'Hello, world!', 'An alert box should show with the correct message');
-				})
-				.dismissAlert()
-				.elementById('helloFriend')
-					.clickElement()
-				.end()
-				.alertText().then(function (text) {
-					assert.strictEqual(text, 'Hello, friend!', 'An alert box should show with the correct message');
 				})
 				.dismissAlert();
 		}
@@ -296,42 +244,51 @@ define([
 });
 ```
 
-*Note: See [this link](https://github.com/admc/wd#supported-methods) for all methods available for functional testing.*
+*Note: To learn which methods are available on the `remote` object, for now, check the [WD.js list of available methods](https://github.com/admc/wd#supported-methods). Better documentation will be available soon. The interface in Intern includes two extra methods not normally available: a `wait` method, which allows you to wait for a fixed period of time before continuing to the next command, and an `end` method, which removes the last element retrieved from the DOM from the current chain’s context (similar to jQuery’s `end` method).*
 
-In the code above, we first use `remote.get` to load our HTML page using the `require` module. We then use `remote.waitForCondition` to wait at most five seconds for the global `ready` variable to become truthy on the page - a simple manual mechanism for knowing when the remote HTML page is fully loaded. Next, we use a series of [WD.js](https://github.com/admc/wd) commands to interact with the remote DOM - we find an element with an id of "helloWorld", click it, then wait for an alert window to show as expected. Each `remote` method returns a promise, which makes asserting aspects of our application very simple. Here, we add a callback to the `alertText` method, which receives the alerted message. We use the standard assertion interface to verify that the message is what we expect. We then repeat the entire process for the button with an id of "helloFriend."
+In the code above, we’re first calling `remote.get` to load the HTML page we want to test into the browser, using the `require` module to convert a relative path from the test module into a fully qualified URL. Once the page has loaded, we wait for up to 5 seconds until the button we want to interact with appears. Once the button shows up, we retrieve a reference to it, click it, and then discard the reference (since we’ve done all we want to do with the button).
 
-The final step for writing our functional test is to add information to the Intern configuration file we previously created so that Intern can find our new test module. Let's add the a `functionalSuites` array containing the AMD [module identifier](https://github.com/amdjs/amdjs-api/wiki/AMD#id-) of our test to the config file at `app/tests/intern.js`:
+After we’ve clicked on the button, an alert box should appear. We need to make sure this is the case, *and* we need to inspect the content of the alert box to make sure it is displaying what we expect. To do this, we’ll call `alertText`, which retrieves the content of the alert box if it exists, or throws an error if there is no alert box currently open. Since this call returns data for us to inspect, we call `then` and provide a callback which is called once the alert text has been retrieved. Inside this callback, we assert that the text from the alert is what we expect.
+
+*Note: TODO Add a note here about how if you try to make more calls to `remote` from inside `then`, things will break.*
+
+Now that this test module is complete, the final step is to add it to our Intern configuration in the `functionalSuites` array:
 
 ```js
-// ...
-
-functionalSuites: ['app/tests/functional/hello']
-
-// ...
+	// ...
+	// Functional test suite(s) to run in each browser once non-functional tests are completed
+	functionalSuites: [ 'app/tests/functional/hello' ],
+	// ...
 ```
 
-That's it! We are now ready to run our tests again, this time using a Selenium instance via Sauce Labs so we can run unit *and* functional tests, and do it on multiple browsers.
+Because functional tests require a separate server to drive the browser, we can’t use `client.html` or `client.js` to execute these tests. To do this, we need to use the test runner, `runner.js`.
 
-## Step 5: Running the tests
+## Step 5: Everything all together
 
-At this point, we have tests written and Intern configured. We are now ready to actually run our tests! Intern can run tests using several different included mechanisms. We've already gone over how to [use the browser client and node client](#checkpoint) - useful test run methods while developing test cases. For code coverage and multi-browser testing, however, we will use a hosted Selenium instance knows as [Sauce Labs](http://saucelabs.com). This is made possible by Intern's auto test runner at `intern/runner.js`. First, we need to expose our Sauce Lab credentials to the environment. This information can also be hardcoded into your Intern configuration file.
+At this point, all our tests are written and Intern is fully configured. The only thing that’s left to do is to run all our tests against multiple platforms. To do this, instead of using the client, we’ll use the test runner.
+
+Unlike the client, which simply runs tests in whichever environment it is loaded, the test runner is responsible for setting up and executing tests against all the environments specified in our configuration, as well as acting as the server for driving functional tests. Running the runner works basically the same as running `client.js`, except that we also need to provide Sauce Labs credentials:
 
 ```bash
-export SAUCE_USERNAME=<your sauce labs username>
-export SAUCE_ACCESS_KEY=<your sauce labs access key>
+SAUCE_USERNAME=<your username> SAUCE_ACCESS_KEY=<your access key> node intern/runner.js config=app/tests/intern
 ```
 
-Once credentials are available, the only other step is to run the tests via `intern/runner.js`. Let's switch to the `intern` directory and kick off the tests:
+*Note: You may instead specify your Sauce Labs username and access key on the `webdriver` object in your Intern configuration, using the `username` and `accessKey` keys, if you want. Providing this information in the environment allows many people with different Sauce Labs accounts to use the same Intern configuration, and allows you to avoid exposing your Sauce Labs credentials to others.*
+
+If everything was done correctly, you should see the results of the test run being output to your terminal:
+
+TODO: Show the test results here.
+
+In addition to test results, the runner also provides information on how much of your application code was actually tested. In the case of our demo app, we’re executing TODO: Number% of our available application code, which is an outstanding level of coverage. In the future, we’ll have a tutorial about how you can get more detailed information about which parts of your code remain untested by using the `lcov` reporter. For now, you can learn a bit more from the [Using Reporters](https://github.com/theintern/intern/wiki/Using-Reporters) documentation.
+
+Whenever you need to run a full test against all platforms, use the test runner. When you are in the process of writing your tests and want to check them for correctness more quickly, you can either use just the client (for your unit tests) or create an alternate configuration file that only tests against a single local platform, like PhantomJS (for all tests, including functional tests). If you don’t want to create an entirely new configuration but just want to load one test suite, you can specify on the command-line:
 
 ```bash
-cd intern
-node runner.js config=app/tests/intern
+node intern/client.js config=app/tests/intern suites=app/tests/hello
 ```
 
-*Note: For full documentation on arguments that can be passed when running tests, check out the [wiki page](https://github.com/theintern/intern/wiki/Running-Tests).*
+In this case, if we had multiple suites registered in our configuration file, only the `app/tests/hello` suite would run.
 
-If all goes according to plan, you should see the output of the test run in the console.
+It’s a good idea to use the runner in conjunction with a continuous integration service like Travis CI or Jenkins, so you can make sure that the code in your repository is passing tests at all times. [Instructions on using Intern with Travis-CI](https://github.com/theintern/intern/wiki/Travis-CI-integration) are available.
 
-## Step 6: Party
-
-Hopefully, we've now shown how to download and configure Intern, write tests, and run them in different environments. For a complete working copy of this project with Intern already configured and the tests already written, you can download a .zip archive [here](https://github.com/bitpshr/intern-tutorial/tags). Be sure to check out the full Intern [documentation](http://github.com/theintern/intern/wiki) and if you have any trouble, check out how to get Intern [support](https://github.com/theintern/intern/wiki/Support).
+For a complete working copy of this project with Intern already configured and the tests already written, [download the completed-tutorial branch](https://github.com/theintern/intern-tutorial/archive/completed-tutorial.zip). If you have any questions, please [let us know](https://github.com/theintern/intern/wiki/Support). Happy testing!
