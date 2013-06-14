@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>app/hello test scaffold</title>
+	</head>
+	<body>
+		<h1 id="header">Hello!</h1>
+		<form id="loginForm">
+			<input id="nameField" type="text" placeholder="Enter your name...">
+			<button type="submit" id="submitBtn">Submit</button>
+		</form>
+
+		<script src="//ajax.googleapis.com/ajax/libs/dojo/1.9.0/dojo/dojo.js"></script>
+		<script>
+			require({ 
+				packages: [ { name: 'app', location: location.pathname.replace(/[^\/]*$/, '') } ] 
+			},
+			[
+				'dojo/on',
+				'dojo/query',
+				'app/hello'
+			], function (on, query, hello) {
+				var loginForm = query("#loginForm")[0],
+					nameField = query('#nameField')[0],
+					header = query('#header')[0];
+
+				on(loginForm, 'submit', function (evt) {
+					header.innerHTML = hello.greet(nameField.value);
+					nameField.value = '';
+					evt.preventDefault();
+				});
+			})
+		</script>
+	</body>
+</html>

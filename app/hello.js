@@ -8,10 +8,6 @@ define([], function () {
 			name = name || 'world';
 
 			return 'Hello, ' + name + '!';
-		},
-
-		alert: function (name) {
-			alert(this.greet(name));
 		}
 	};
 });
