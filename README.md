@@ -34,7 +34,7 @@ That’s it! Installation is complete.
 
 ## Step 2: Configuring Intern
 
-Intern needs to be configured so it can find our tests and know how we want to run them. This is done by creating an Intern configuration file, which is a regular AMD module that defines a configuration object. Before creating this file, we first need to create a place for it to live. By convention, the configuration file and tests for a given application are put within a `tests` subdirectory for that application, so create one for our application at `intern-tutorial/tests`:
+Intern needs to be configured so it can find our tests and know how we want to run them. This is done by creating an Intern configuration file, which is a regular AMD module that defines a configuration object. Before creating this file, we first need to create a place for it to live. By convention, the configuration file and tests for a given application are put within a `tests` subdirectory for that application, so create one at `intern-tutorial/tests`:
 
 ```bash
 mkdir tests
@@ -46,7 +46,7 @@ Next, copy the example configuration file from Intern to `app/tests/intern.js`:
 cp node_modules/intern/tests/example.intern.js tests/intern.js
 ```
 
-This example configuration provides us with some default settings that work well for most projects. The remaining configuration that needs to be done in order for Intern to work with our project is to tell the loader that our `app` package exists. Within the example configuration, this means changing `packages: [ 'myPackage' ]` to `packages: [ 'app' ]`:
+This example configuration provides us with some default settings that work well for most projects. The remaining configuration that needs to be done in order for Intern to work with our project is to tell the loader that our `app` package exists. Within the example configuration, this means changing `packages: [ { name: 'myPackage', location: '.' } ]` to `packages: [ 'app' ]`:
 
 ```js
 	// ...
@@ -101,13 +101,13 @@ These pieces can be visualized in a hierarchy, like this:
 * test module
 * ...
 
-Test modules are typically split up so that there’s one test module for each corresponding code module being tested. We have one code module in our demo app (`app/hello`), so we’ll create a new test module at `app/tests/hello.js` and put the following boilerplate into it:
+Test modules are typically split up so that there’s one test module for each corresponding code module being tested. We have one code module in our demo app (`app/hello`), so we’ll create a new test module at `intern-tutorial/tests/hello.js` and put the following boilerplate into it:
 
 ```js
 define([
 	'intern!object',
 	'intern/chai!assert',
-	'../hello'
+	'app/hello'
 ], function (registerSuite, assert, hello) {
 
 });
@@ -125,7 +125,7 @@ Looking at the source code for `app/hello`, we can see that when `greet` is call
 define([
 	'intern!object',
 	'intern/chai!assert',
-	'../hello'
+	'app/hello'
 ], function (registerSuite, assert, hello) {
 	registerSuite({
 		name: 'hello',
@@ -172,13 +172,13 @@ Functional tests are different from unit tests in that they *mimic user interact
 
 Intern’s functional testing (and its continuous integration) is based on the [standard WebDriver protocol](http://www.w3.org/TR/webdriver/), so you can either use a [Sauce Labs](http://saucelabs.com) account or [set up your own WebDriver server](http://docs.seleniumhq.org/docs/03_webdriver.jsp#running-standalone-selenium-server-for-use-with-remotedrivers). Because Sauce Labs is much easier to use, this tutorial assumes you are using Sauce.
 
-To get started, create a new directory to hold the functional tests (in order to differentiate them from our normal unit tests) at `app/tests/functional`:
+To get started, create a new directory to hold the functional tests (in order to differentiate them from our normal unit tests) at `intern-tutorial/tests/functional`:
 
 ```bash
 mkdir tests/functional
 ```
 
-Next, create a test module at `app/tests/functional/hello.js` with the following boilerplate:
+Next, create a test module at `intern-tutorial/tests/functional/helloForm.js` with the following boilerplate:
 
 ```js
 define([
@@ -244,7 +244,7 @@ Now that this test module is complete, the final step is to add it to our Intern
 ```js
 	// ...
 	// Functional test suite(s) to run in each browser once non-functional tests are completed
-	functionalSuites: [ 'tests/functional/hello' ],
+	functionalSuites: [ 'tests/functional/helloForm' ],
 	// ...
 ```
 
@@ -264,14 +264,24 @@ SAUCE_USERNAME=<your username> SAUCE_ACCESS_KEY=<your access key> node node_modu
 
 If everything was done correctly, you should see the results of the test run being output to your terminal:
 
-TODO: Show the test results here.
+```bash
+...
+=============================== Coverage summary ===============================
+Statements   : 100% ( 4/4 )
+Branches     : 100% ( 2/2 )
+Functions    : 100% ( 2/2 )
+Lines        : 100% ( 4/4 )
+================================================================================
+TOTAL: tested 6 platforms, 0/18 tests failed; fatal error occurred
+Shutting down
+```
 
-In addition to test results, the runner also provides information on how much of your application code was actually tested. In the case of our demo app, we’re executing TODO: Number% of our available application code, which is an outstanding level of coverage. In the future, we’ll have a tutorial about how you can get more detailed information about which parts of your code remain untested by using the `lcov` reporter. For now, you can learn a bit more from the [Using Reporters](https://github.com/theintern/intern/wiki/Using-Reporters) documentation.
+In addition to test results, the runner also provides information on how much of your application code was actually tested. In the case of our demo app, we’re executing 100% of our available application code, which is an outstanding level of coverage. In the future, we’ll have a tutorial about how you can get more detailed information about which parts of your code remain untested by using the `lcov` reporter. For now, you can learn a bit more from the [Using Reporters](https://github.com/theintern/intern/wiki/Using-Reporters) documentation.
 
 Whenever you need to run a full test against all platforms, use the test runner. When you are in the process of writing your tests and want to check them for correctness more quickly, you can either use just the client (for your unit tests) or create an alternate configuration file that only tests against a single local platform, like PhantomJS (for all tests, including functional tests). If you don’t want to create an entirely new configuration but just want to load one test suite, you can specify on the command-line:
 
 ```bash
-node intern/client.js config=app/tests/intern suites=app/tests/hello
+node node_modules/intern/client.js config=tests/intern suites=tests/hello
 ```
 
 In this case, if we had multiple suites registered in our configuration file, only the `app/tests/hello` suite would run.
