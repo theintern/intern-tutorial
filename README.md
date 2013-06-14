@@ -15,7 +15,7 @@ Once you have all the necessary prerequisites, download the demo application by 
 git clone https://github.com/theintern/intern-tutorial.git
 ```
 
-The application itself is in the package directory named `app`.
+The application itself consists of a basic HTML page and a single "app" package.
 
 ## What can Intern test?
 
@@ -23,10 +23,10 @@ Intern supports two types of tests: unit tests and functional tests. **Unit test
 
 ## Step 1: Download Intern
 
-Intern is distribuetd as an [npm](https://npmjs.org/) package. Because our demo app lives at `intern-tutorial/app`, we will switch to that directory and install it using `npm install`.
+Intern is distribuetd as an [npm](https://npmjs.org/) package. The recommended file structure when using Intern is to install it in the root of the application under test. Because our demo app lives at `intern-tutorial/`, we will temporarily switch to that directory and install it using `npm install`.
 
 ```bash
-cd intern-tutorial/app
+cd intern-tutorial
 npm install intern
 ```
 
@@ -34,16 +34,16 @@ That’s it! Installation is complete.
 
 ## Step 2: Configuring Intern
 
-Intern needs to be configured so it can find our tests and know how we want to run them. This is done by creating an Intern configuration file, which is a regular AMD module that defines a configuration object. Before creating this file, we first need to create a place for it to live. By convention, the configuration file and tests for a given package are put within a `tests` subdirectory for that package, so create one for our application at `app/tests`:
+Intern needs to be configured so it can find our tests and know how we want to run them. This is done by creating an Intern configuration file, which is a regular AMD module that defines a configuration object. Before creating this file, we first need to create a place for it to live. By convention, the configuration file and tests for a given application are put within a `tests` subdirectory for that application, so create one for our application at `intern-tutorial/tests`:
 
 ```bash
-mkdir app/tests
+mkdir tests
 ```
 
 Next, copy the example configuration file from Intern to `app/tests/intern.js`:
 
 ```bash
-cp intern/tests/example.intern.js app/tests/intern.js
+cp node_modules/intern/tests/example.intern.js tests/intern.js
 ```
 
 This example configuration provides us with some default settings that work well for most projects. The remaining configuration that needs to be done in order for Intern to work with our project is to tell the loader that our `app` package exists. Within the example configuration, this means changing `packages: [ 'myPackage' ]` to `packages: [ 'app' ]`:
@@ -62,7 +62,7 @@ This example configuration provides us with some default settings that work well
 We’ll be doing a little more configuration shortly when we start adding tests, but for now, we have a complete configuration. You can verify that everything is working by running the Node.js client:
 
 ```bash
-node intern/client.js config=app/tests/intern
+node node_modules/intern/client.js config=tests/intern
 ```
 
 It should output:
@@ -144,12 +144,12 @@ In this test module, we’ve registered a new suite for our `hello` module and n
 
 Each of our assertions also contains a message that describes what logic the assertion is actually checking. Similar to good code comments that describe *why* a piece of code exists, these messages are used to describe the business expectation behind an assertion rather than simply describing the assertion. For instance, “Calling hello.greet('Murray') should return "Hello, Murray!"” would be a bad assertion message because it just describes what the assertion is doing, rather than describing the desired outcome. With the message we’ve used in the code above, if the `hello.greet` method were changed in the future to return `"Hi, <name>!"` instead, it would be clear that the test itself needed to be updated because the code still fulfils the original business logic. Similarly, if the method were changed to return `"You suck, <name>!"` instead, it would then be clear that the application code was updated incorrectly.
 
-The final step when writing a new test module is to add the [module’s identifier](https://github.com/amdjs/amdjs-api/wiki/AMD#id-) to our configuration file so that it is loaded when we run Intern. To do this, in the `suites` array, add the string `'app/tests/hello'`:
+The final step when writing a new test module is to add the [module’s identifier](https://github.com/amdjs/amdjs-api/wiki/AMD#id-) to our configuration file so that it is loaded when we run Intern. To do this, in the `suites` array, add the string `'tests/hello'`:
 
 ```js
 	// ...
 	// Unit test modules to run in each browser
-	suites: [ 'app/tests/hello' ],
+	suites: [ 'tests/hello' ],
 	// ...
 ```
 
@@ -175,7 +175,7 @@ Intern’s functional testing (and its continuous integration) is based on the [
 To get started, create a new directory to hold the functional tests (in order to differentiate them from our normal unit tests) at `app/tests/functional`:
 
 ```bash
-mkdir app/tests/functional
+mkdir tests/functional
 ```
 
 Next, create a test module at `app/tests/functional/hello.js` with the following boilerplate:
@@ -187,7 +187,7 @@ define([
 	'require'
 ], function (registerSuite, assert, require) {
 	registerSuite({
-		name: 'app/hello (functional)',
+		name: 'hello form (functional)',
 
 		'form submit': function () {
 
@@ -200,7 +200,7 @@ Just like our unit test before, we’re using the object test interface and asse
 
 To facilitate functional testing, an object is exposed to tests at `this.remote` which provides an interface for interacting with the remote environment. Using these methods, we can load a Web page, interact with it, and retrieve data from it to assert that our actions caused the expected result. Since all calls to the remote browser are asynchronous, this interface allows us to chain commands (like jQuery) and retrieve results using standard promises-style `then` calls. When we make a call, it is enqueued and executed once all the previous commands have completed. If this description is a little confusing, don’t worry—it should be clearer once we look at some code.
 
-If we look at the HTML page at `app/index.html`, we can see the simple form with a single input. As mentioned, the purpose of this functional test is to simulate a specific flow of user interaction: focusing the inputer, typing a string, and clicking submit. We can then verify that the header was properly updated. Once we’re done, our test will look something like this:
+If we look at the HTML page at `app/index.html`, we can see the simple form with a single input; once this page and all required scripts are loaded, a CSS class name of "loaded" is added to the body element. As mentioned, the purpose of this functional test is to simulate a specific flow of user interaction: focusing the input, typing a string, and clicking submit. We can then verify that the header was properly updated. Once we’re done, our test will look something like this:
 
 ```js
 define([
@@ -213,16 +213,19 @@ define([
 
 		submit: function () {
 			return this.remote
-				.get(require.toUrl('../hello.html'))
-				.waitForElementById('nameField', 5000)
+				.get(require.toUrl('../../index.html'))
+				.waitForElementByClassName('loaded', 5000)
+				.elementById('nameField')
+					.clickElement()
 					.type('Gordon')
 				.end()
 				.elementById('submitBtn')
 					.clickElement()
 				.end()
-				.elementById('header').then(function (element) {
-					assert.strictEqual(element.innerHTML, 'Hello, Gordon!', 'Header should display expected greeting.');
-				})
+				.elementById('header')
+				.getAttribute('innerHTML').then(function (innerHTML) {
+					assert.strictEqual(innerHTML, 'Hello, Gordon!', 'Header should display expected greeting.');
+				});
 		}
 	});
 });
@@ -230,18 +233,18 @@ define([
 
 *Note: To learn which methods are available on the `remote` object, for now, check the [WD.js list of available methods](https://github.com/admc/wd#supported-methods). Better documentation will be available soon. The interface in Intern includes two extra methods not normally available: a `wait` method, which allows you to wait for a fixed period of time before continuing to the next command, and an `end` method, which removes the last element retrieved from the DOM from the current chain’s context (similar to jQuery’s `end` method).*
 
-In the code above, we’re first calling `remote.get` to load the HTML page we want to test into the browser, using the `require` module to convert a relative path from the test module into a fully qualified URL. Once the page has loaded, we wait for up to 5 seconds until the input we want to interact with appears. Once the input shows up, we retrieve a reference to it, type text into it, and then discard the reference (since we’ve done all we want to do with the input). After we've typed text into the input, we get a reference to the submit button on the page, click it, and then discard that reference as well.
+In the code above, we’re first calling `remote.get` to load the HTML page we want to test into the browser, using the `require` module to convert a relative path from the test module into a fully qualified URL. As mentioned earlier, this HTML page sets a "loaded" CSS class on the body element once all scripts are loaded, so we wait for up to 5 seconds until an element appears with a class name of "loaded" before continuing with the test. Once this element appears, we retrieve a reference to the input on the HTML page, type text into it, and then discard the reference (since we’ve done all we want to do with the input). After we've typed text into the input, we get a reference to the submit button on the page, click it, and then discard that reference as well.
 
 After we've clicked on the button to submit the form, the header text should change and display a new greeting. We need to make sure this is the case. Just like we did for the submit button, we get a reference to the header. Since this call returns an element for us to inspect, we call `then` and provide a callback which is called once the element reference has been retrieved. Inside this callback, we assert that the innerHTML of the element is what we expect.
 
-*Note: Currently, making more calls to `remote` from inside `then` will cause tests to break. This is a known issue and is currently being tracked [here](https://github.com/theintern/intern/issues/14).
+*Note: Currently, making more calls to `remote` from inside `then` will cause tests to break. This is a known issue and is currently being tracked [here](https://github.com/theintern/intern/issues/14).*
 
 Now that this test module is complete, the final step is to add it to our Intern configuration in the `functionalSuites` array:
 
 ```js
 	// ...
 	// Functional test suite(s) to run in each browser once non-functional tests are completed
-	functionalSuites: [ 'app/tests/functional/hello' ],
+	functionalSuites: [ 'tests/functional/hello' ],
 	// ...
 ```
 
@@ -254,7 +257,7 @@ At this point, all our tests are written and Intern is fully configured. The onl
 Unlike the client, which simply runs tests in whichever environment it is loaded, the test runner is responsible for setting up and executing tests against all the environments specified in our configuration, as well as acting as the server for driving functional tests. Running the runner works basically the same as running `client.js`, except that we also need to provide Sauce Labs credentials:
 
 ```bash
-SAUCE_USERNAME=<your username> SAUCE_ACCESS_KEY=<your access key> node intern/runner.js config=app/tests/intern
+SAUCE_USERNAME=<your username> SAUCE_ACCESS_KEY=<your access key> node node_modules/intern/runner.js config=tests/intern
 ```
 
 *Note: You may instead specify your Sauce Labs username and access key on the `webdriver` object in your Intern configuration, using the `username` and `accessKey` keys, if you want. Providing this information in the environment allows many people with different Sauce Labs accounts to use the same Intern configuration, and allows you to avoid exposing your Sauce Labs credentials to others.*
