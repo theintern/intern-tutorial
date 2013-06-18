@@ -40,7 +40,7 @@ Intern needs to be configured so it can find our tests and know how we want to r
 mkdir tests
 ```
 
-Next, copy the example configuration file from Intern to `app/tests/intern.js`:
+Next, copy the example configuration file from Intern to `intern-tutorial/tests/intern.js`:
 
 ```bash
 cp node_modules/intern/tests/example.intern.js tests/intern.js
