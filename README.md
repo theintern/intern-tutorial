@@ -266,7 +266,7 @@ SAUCE_USERNAME=<your username> SAUCE_ACCESS_KEY=<your access key> node node_modu
 
 If everything was done correctly, you should see the results of the test run being output to your terminal:
 
-```bash
+```
 Defaulting to "runner" reporter
 Listening on 0.0.0.0:9000
 Missing Sauce Connect local proxy, downloading dependency
