@@ -2,36 +2,37 @@
 <html>
 	<head>
 		<meta charset="utf-8">
-		<title>app/hello test scaffold</title>
+		<title>Intern tutorial</title>
 	</head>
 	<body>
-		<h1 id="header">Hello!</h1>
+		<p id="greeting">Please enter your name</p>
 		<form id="loginForm">
-			<input id="nameField" type="text" placeholder="Enter your name...">
-			<button type="submit" id="submitBtn">Submit</button>
+			<input id="nameField" type="text" placeholder="Your name">
+			<input type="submit" value="Submit">
 		</form>
+
 		<script>
-			var dojoConfig =  {
-				packages: [{
+			var dojoConfig = {
+				packages: [ {
 					name: 'app',
 					location: location.pathname.replace(/[^\/]*$/, 'app')
-				}]
+				} ]
 			};
 		</script>
-		<script src="//ajax.googleapis.com/ajax/libs/dojo/1.9.0/dojo/dojo.js"></script>
+		<script src="//ajax.googleapis.com/ajax/libs/dojo/1.9.1/dojo/dojo.js"></script>
 		<script>
 			require([
 				'dojo/on',
-				'dojo/query',
+				'dojo/dom',
 				'app/hello'
-			], function (on, query, hello) {
-				var loginForm = query("#loginForm")[0],
-					nameField = query('#nameField')[0],
-					header = query('#header')[0];
+			], function (on, dom, hello) {
+				var greeting = dom.byId('greeting'),
+					loginForm = dom.byId('loginForm'),
+					nameField = dom.byId('nameField');
 
-				on(loginForm, 'submit', function (evt) {
-					evt.preventDefault();
-					header.innerHTML = hello.greet(nameField.value);
+				on(loginForm, 'submit', function (event) {
+					event.preventDefault();
+					greeting.innerHTML = hello.greet(nameField.value).replace(/&/g, '&amp;').replace(/</g, '&lt;');
 					nameField.value = '';
 				});
 
