@@ -21,16 +21,14 @@ Intern supports two types of tests: unit tests and functional tests. **Unit test
 
 ## Step 1: Download Intern
 
-Intern is distributed as an [npm package](https://npmjs.org/package/intern) so it can be easily added as a dependency to any project. Because this is a tutorial on using Intern, we’ll forego setting up a complete [package.json](https://npmjs.org/doc/json.html) for our demo application and will instead simply add Intern using a one-off installation:
+Intern is distributed as an [npm package](https://npmjs.org/package/intern) so it can be easily added as a dependency to any project. We’ve created a basic [package.json](https://npmjs.org/doc/json.html) already for our demo application and will install Intern using the `--save-dev` flag so that npm adds it automatically as a development dependency:
 
 ```bash
 cd intern-tutorial
-npm install intern
+npm install intern --save-dev
 ```
 
 That’s it! Installation is complete.
-
-*Note: In a production application, you will typically add `"devDependencies": { "intern": "1.1.0" }` to your package.json so Intern can be installed along with all your other development dependencies.*
 
 ## Step 2: Configuring Intern
 
@@ -235,11 +233,9 @@ define([
 });
 ```
 
-*Note: To learn which methods are available on the `remote` object, for now, check the [WD.js list of available methods](https://github.com/admc/wd#supported-methods). Better documentation will be available soon. The interface in Intern includes two extra methods not normally available: a `wait` method, which allows you to wait for a fixed period of time before continuing to the next command, and an `end` method, which removes the last element retrieved from the DOM from the current chain’s context (similar to jQuery’s `end` method).*
+*Note: To learn which methods are available on the `remote` object, for now, check the [inline documentation](https://github.com/theintern/intern/blob/1.2.0/lib/wd.js#L79-L681) and the [WD.js list of available methods](https://github.com/admc/wd#supported-methods). Better documentation will be available soon. The interface in Intern includes five extra methods not available in WD.js: a `wait` method, which allows you to wait for a fixed period of time before continuing to the next command; an `end` method, which removes the last element retrieved from the DOM from the current chain’s context (similar to jQuery’s `end` method); and `then`, `otherwise`, and `always` methods which work the same as Promises.*
 
 In the code above, calling `remote.get` loads the HTML page we want to test into the browser, using the `require.toUrl` function to convert the path `index.html` to a fully qualified URL. Then, we wait for the “loaded” CSS class to appear on the body, for a maximum of five seconds. Once this element exists, we go through the process of finding, clicking, and typing into elements. Finally, we retrieve the text from the greeting element and check it to confirm that it matches what was expected.
-
-*Note: Making more calls to `remote` from inside a `then` callback will cause tests to break. This is a [known issue](https://github.com/theintern/intern/issues/14).*
 
 Now that this test module is complete, the final step is to add it to our Intern configuration in the special `functionalSuites` array:
 
@@ -313,6 +309,6 @@ In this case, instead of loading suites from our configuration file’s `suites`
 
 When you start testing your actual application, it’s a good idea to use the test runner in conjunction with a continuous integration service like Travis CI or Jenkins so you know that the code in your repository is passing its tests at all times, and so you can monitor your code coverage figures. [Instructions on using Intern with Travis CI](https://github.com/theintern/intern/wiki/Travis-CI-integration) are available; instructions for Jenkins will be available shortly, but it is as simple as adding the `runner.js` command as a task.
 
-If you’d like a complete working copy of this project with Intern already configured and the tests already written, [download the completed-tutorial branch](https://github.com/theintern/intern-tutorial/archive/completed-tutorial.zip). If you have any questions, please [let us know](https://github.com/theintern/intern/wiki/Support). [Pull requests to enhance this tutorial](https://github.com/theintern/intern-tutorial/compare/) are also accepted.
+If you’d like a complete working copy of this project with Intern already configured and the tests already written, [download the completed-tutorial branch](https://github.com/theintern/intern-tutorial/archive/completed-tutorial-1.2.0.zip). If you have any questions, please [let us know](https://github.com/theintern/intern/wiki/Support). [Pull requests to enhance this tutorial](https://github.com/theintern/intern-tutorial/compare/) are also accepted.
 
 Happy testing!
