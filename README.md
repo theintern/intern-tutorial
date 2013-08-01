@@ -193,7 +193,7 @@ define([
 		'greeting form': function () {
 
 		}
-	})
+	});
 });
 ```
 
