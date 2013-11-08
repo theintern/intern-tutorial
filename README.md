@@ -32,7 +32,7 @@ That’s it! Installation is complete.
 
 ## Step 2: Configuring Intern
 
-Intern needs to be configured so it can find our tests and know how we want to run them. This is done by creating an Intern configuration file, but first we need to create a place for it to live. There are [a few valid conventions](https://github.com/theintern/intern/wiki/Directory-Structure-Examples) that can be used; for this tutorial, we’ll place the configuration file and tests within a `tests` subdirectory of the project, so create one at `intern-tutorial/tests`:
+Intern needs to be configured so it can find our tests and know how we want to run them. This is done by creating an Intern configuration file, but first we need to create a place for it to live. For this tutorial, we’ll place the configuration file and tests within a `tests` subdirectory of the project, so create one at `intern-tutorial/tests`:
 
 ```bash
 mkdir tests
@@ -57,11 +57,13 @@ This example configuration provides us with some default settings that work well
 
 *Note: The `loader` object in the configuration file accepts any configuration options that are understood by the AMD loader. If you need to include additional packages, map modules, etc., this is the place to do it.*
 
-We’ll be doing a little more configuration shortly when we start adding tests, but for now, we have a complete configuration. You can verify that everything is working by running the Node.js client:
+We’ll be doing a little more configuration shortly when we start adding tests, but for now, we have a complete configuration. You can verify that everything is working by running the Node.js client, passing the ID of the configuration module we just created (which is relative to the current working directory) as `config`:
 
 ```bash
-node node_modules/intern/client.js config=tests/intern
+./node_modules/.bin/intern-client config=tests/intern
 ```
+
+*Note: If you install Intern globally and your `PATH` is configured properly, you can simply run `intern-client` instead.*
 
 It should output:
 
@@ -255,7 +257,7 @@ At this point, all our tests are written and Intern is fully configured. The onl
 Unlike the client, which simply runs tests in whichever environment it is loaded, the test runner is responsible for setting up and executing tests against all the environments specified in our configuration, as well as acting as the server for driving functional tests. It also adds instrumentation to code so that we can analyze how much of our code is actually being executed by our tests. Using the runner works basically the same as running `client.js`, except that since we are using Sauce Labs we also need to provide our Sauce credentials:
 
 ```bash
-SAUCE_USERNAME=<your username> SAUCE_ACCESS_KEY=<your access key> node node_modules/intern/runner.js config=tests/intern
+SAUCE_USERNAME=<your username> SAUCE_ACCESS_KEY=<your access key> ./node_modules/.bin/intern-runner config=tests/intern
 ```
 
 *Note: You may instead specify your Sauce Labs username and access key on the `webdriver` object in your Intern configuration, using the `username` and `accessKey` keys, if you want. However, keep in mind that putting this information in the configuration exposes your username and access key to others.*
@@ -302,7 +304,7 @@ Whenever you need to run a full test against all platforms, use the test runner.
 If you are in the process of writing tests, don’t want to create an entirely new configuration file, but just want to load a certain test module, you can [specify it on the command-line](https://github.com/theintern/intern/wiki/Running-Tests):
 
 ```bash
-node node_modules/intern/client.js config=tests/intern suites=tests/hello
+./node_modules/.bin/intern-client config=tests/intern suites=tests/hello
 ```
 
 In this case, instead of loading suites from our configuration file’s `suites` array, only the `tests/hello` module would be loaded and executed.
