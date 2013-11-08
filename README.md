@@ -237,6 +237,8 @@ define([
 
 *Note: To learn which methods are available on the `remote` object, for now, check the [inline documentation](https://github.com/theintern/intern/blob/1.2.0/lib/wd.js#L79-L681) and the [WD.js list of available methods](https://github.com/admc/wd#supported-methods). Better documentation will be available soon. The interface in Intern includes five extra methods not available in WD.js: a `wait` method, which allows you to wait for a fixed period of time before continuing to the next command; an `end` method, which removes the last element retrieved from the DOM from the current chain’s context (similar to jQuery’s `end` method); and `then`, `otherwise`, and `always` methods which work the same as Promises.*
 
+*Also, note that if you are using PhantomJS setup you will have to use intern-geezer instead and you will have to change `this.remote` to `this.get('remote')` since old IE doesn’t support ES5 getter/setters. Hopefully PhantomJS 2.0 will fix this issue. More info at [Using-Intern-with-PhantomJS](https://github.com/theintern/intern/wiki/Using-Intern-with-PhantomJS).*
+
 In the code above, calling `remote.get` loads the HTML page we want to test into the browser, using the `require.toUrl` function to convert the path `index.html` to a fully qualified URL. Then, we wait for the “loaded” CSS class to appear on the body, for a maximum of five seconds. Once this element exists, we go through the process of finding, clicking, and typing into elements. Finally, we retrieve the text from the greeting element and check it to confirm that it matches what was expected.
 
 Now that this test module is complete, the final step is to add it to our Intern configuration in the special `functionalSuites` array:
