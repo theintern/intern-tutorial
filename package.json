@@ -15,6 +15,6 @@
 	"bugs": "https://github.com/theintern/intern-tutorial/issues",
 	"homepage": "http://theintern.io/",
 	"devDependencies": {
-		"intern": "~1.2.0"
+		"intern": "https://github.com/theintern/intern/archive/master.tar.gz"
 	}
 }
