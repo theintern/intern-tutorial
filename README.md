@@ -229,11 +229,11 @@ define([
 				.setFindTimeout(5000)
 				.findByCssSelector('body.loaded')
 				.findById('nameField')
-					.clickElement()
+					.click()
 					.type('Elaine')
 					.end()
 				.findByCssSelector('#loginForm input[type=submit]')
-					.clickElement()
+					.click()
 					.end()
 				.findById('greeting')
 				.getVisibleText()
@@ -271,11 +271,11 @@ Unlike the client, which simply runs tests in whichever environment it is loaded
 SAUCE_USERNAME=<your username> SAUCE_ACCESS_KEY=<your access key> ./node_modules/.bin/intern-runner config=tests/intern
 ```
 
-You may instead specify your Sauce Labs username and access key on the `webdriver` object in your Intern configuration, using the `username` and `accessKey` keys. 
+You may instead specify your Sauce Labs username and access key on the `tunnelOptions` object in your Intern configuration, using the `username` and `accessKey` keys.
 
 ```js
 	// ...
-	webdriver: {
+	tunnelOptions: {
 		username: '<your username>',
 		accessKey: '<your access key>'
 	},
@@ -338,7 +338,7 @@ If you are in the process of writing tests and don’t want to create an entirel
 ./node_modules/.bin/intern-client config=tests/intern suites=tests/hello
 ```
 
-In this case, instead of loading suites from our configuration file’s `suites` array, only the `tests/hello` module would be loaded and executed.
+In this case, instead of loading suites from our configuration file’s `suites` array, only the `tests/hello` module would be loaded and executed. Note that this only modifies the list of unit test suites; the ability to modify functional tests is [coming soon](https://github.com/theintern/intern/pull/195).
 
 When you start testing your actual application, it’s a good idea to use the test runner in conjunction with a continuous integration service like Travis CI or Jenkins so you know that the code in your repository is passing its tests at all times, and so you can monitor your code coverage figures. Instructions are availble for using Intern with [Travis CI](https://github.com/theintern/intern/wiki/Travis-CI-integration), [Jenkins](https://github.com/theintern/intern/wiki/Jenkins-CI-integration), and [TeamCity](https://github.com/theintern/intern/wiki/TeamCity-CI-integration).
 
