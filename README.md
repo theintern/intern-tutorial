@@ -229,11 +229,11 @@ define([
 				.setFindTimeout(5000)
 				.findByCssSelector('body.loaded')
 				.findById('nameField')
-					.clickElement()
+					.click()
 					.type('Elaine')
 					.end()
 				.findByCssSelector('#loginForm input[type=submit]')
-					.clickElement()
+					.click()
 					.end()
 				.findById('greeting')
 				.getVisibleText()
@@ -271,11 +271,11 @@ Unlike the client, which simply runs tests in whichever environment it is loaded
 SAUCE_USERNAME=<your username> SAUCE_ACCESS_KEY=<your access key> ./node_modules/.bin/intern-runner config=tests/intern
 ```
 
-You may instead specify your Sauce Labs username and access key on the `webdriver` object in your Intern configuration, using the `username` and `accessKey` keys. 
+You may instead specify your Sauce Labs username and access key on the `tunnelOptions` object in your Intern configuration, using the `username` and `accessKey` keys.
 
 ```js
 	// ...
-	webdriver: {
+	tunnelOptions: {
 		username: '<your username>',
 		accessKey: '<your access key>'
 	},
