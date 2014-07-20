@@ -5,7 +5,7 @@ In this tutorial, we will walk through how to set up, write tests, and run tests
 * A Bourne-compatible shell, like bash or zsh (or knowledge to execute equivalent commands in your environment)
 * [Git](http://gitscm.com/)
 * [Node 0.8+](http://nodejs.org/)
-* A [free Sauce Labs account](https://saucelabs.com/signup)
+* A [free Sauce Labs account](https://saucelabs.com/signup/plan/free)
 
 Once you have all the necessary prerequisites, download the demo application by cloning this repository:
 
