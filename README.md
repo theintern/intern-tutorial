@@ -68,7 +68,7 @@ We’ll be doing a little more configuration shortly when we start adding tests,
 It should output:
 
 ```
-0/0 tests passed
+0/0 tests failed
 ```
 
 Now that we’ve configured Intern, we need to create a test module which will contain the actual tests for our application.
