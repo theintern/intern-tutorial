@@ -68,7 +68,7 @@ We’ll be doing a little more configuration shortly when we start adding tests,
 It should output:
 
 ```
-0/0 tests passed
+0/0 tests failed
 ```
 
 Now that we’ve configured Intern, we need to create a test module which will contain the actual tests for our application.
@@ -161,8 +161,8 @@ Now if we go back and run the same client.js command from the end of Step 2, we 
 
 ```
 PASS: main - hello - greet (0ms)
-1/1 tests passed
-1/1 tests passed
+0/1 tests failed
+0/1 tests failed
 
 ---------------+-----------+-----------+-----------+-----------+
 File           |   % Stmts |% Branches |   % Funcs |   % Lines |
@@ -174,7 +174,7 @@ All files      |       100 |       100 |       100 |       100 |
 ---------------+-----------+-----------+-----------+-----------+
 ```
 
-*Note: The “tests passed” line appears twice because it is displayed once at the end of each test suite, then again at the end of the entire test run with the total count. Since we only have one test suite, the two values are identical.*
+*Note: The “tests failed” line appears twice because it is displayed once at the end of each test suite, then again at the end of the entire test run with the total count. Since we only have one test suite, the two values are identical.*
 
 These same tests can be run directly within a Web browser by navigating to `http://path/to/intern-tutorial/node_modules/intern/client.html?config=tests/intern` and looking in the Web console for the results. (In fact, you don’t need Node.js to be installed at all to use `client.html`.)
 
