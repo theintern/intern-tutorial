@@ -338,7 +338,11 @@ If you are in the process of writing tests and don’t want to create an entirel
 ./node_modules/.bin/intern-client config=tests/intern suites=tests/hello
 ```
 
-In this case, instead of loading suites from our configuration file’s `suites` array, only the `tests/hello` module would be loaded and executed. Note that this only modifies the list of unit test suites; the ability to modify functional tests is [coming soon](https://github.com/theintern/intern/pull/195).
+In this case, instead of loading suites from our configuration file’s `suites` array, only the `tests/hello` module would be loaded and executed. Note that this only modifies the list of unit test suites; the ability to modify functional tests was added in version 2.1 [https://github.com/theintern/intern/releases/tag/2.1.0]:
+
+```bash
+./node_modules/.bin/intern-client config=tests/intern suites=tests/hello functionalSuites=tests/functional/index
+```
 
 When you start testing your actual application, it’s a good idea to use the test runner in conjunction with a continuous integration service like Travis CI or Jenkins so you know that the code in your repository is passing its tests at all times, and so you can monitor your code coverage figures. Instructions are availble for using Intern with [Travis CI](https://github.com/theintern/intern/wiki/Travis-CI-integration), [Jenkins](https://github.com/theintern/intern/wiki/Jenkins-CI-integration), and [TeamCity](https://github.com/theintern/intern/wiki/TeamCity-CI-integration).
 
