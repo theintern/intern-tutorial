@@ -5,7 +5,7 @@ In this tutorial, we will walk through how to set up, write tests, and run tests
 * A Bourne-compatible shell, like bash or zsh (or knowledge to execute equivalent commands in your environment)
 * [Git](http://gitscm.com/)
 * [Node 0.8+](http://nodejs.org/)
-* A [free Sauce Labs account](https://saucelabs.com/signup/plan/free)
+* A [free Sauce Labs account](https://saucelabs.com/signup/plan/free) as 'test runner' or WebDriver (we'll cover this up later)
 
 Once you have all the necessary prerequisites, download the demo application by cloning this repository:
 
@@ -21,11 +21,11 @@ Intern supports two types of tests: unit tests and functional tests. **Unit test
 
 ## Step 1: Download Intern
 
-Intern is distributed as an [npm package](https://npmjs.org/package/intern) so it can be easily added as a dependency to any project. We’ve created a basic [package.json](https://npmjs.org/doc/json.html) already for our demo application and will install Intern using the `--save-dev` flag so that npm adds it automatically as a development dependency:
+Intern is distributed as an [npm package](https://npmjs.org/package/intern) so it can be easily added as a dependency to any project. We’ve created a basic [package.json](https://npmjs.org/doc/json.html) already for our demo application and will install Intern using the `--save-dev` flag so that npm adds it automatically as a development dependency (omit the `webdriver-manager` part to remove local selenium test support):
 
 ```bash
 cd intern-tutorial
-npm install intern --save-dev
+npm install intern webdriver-manager --save-dev
 ```
 
 That’s it! Installation is complete.
@@ -178,6 +178,8 @@ All files      |       100 |       100 |       100 |       100 |
 
 These same tests can be run directly within a Web browser by navigating to `http://path/to/intern-tutorial/node_modules/intern/client.html?config=tests/intern` and looking in the Web console for the results. (In fact, you don’t need Node.js to be installed at all to use `client.html`.)
 
+![web-console](intern-unit-test.png)
+
 ## Step 4: Write a functional test
 
 Functional tests are different from unit tests in that they *mimic user interaction* by sending commands to browsers using an external server instead of running directly in the environment being tested. This enables us to generate real DOM events and test UI interactions just like a real user, with no JavaScript security sandbox limitations. As well as enabling testing of sandbox-restricted actions like [file uploads](http://saucelabs.com/resources/selenium-file-upload), functional testing also allows us to test interactions that span multiple pages and interactions with third party sites (like OAuth authorization flows). Our demo app contains an HTML file with a basic form that should display a greeting using `hello.greet`. For this tutorial, we’ll simulate a user filling out a form and clicking a button to submit it in order to verify this page works as expected.
@@ -261,11 +263,65 @@ Now that this test module is complete, the final step is to add it to our Intern
 
 Because functional tests require a server to drive the browser, we can’t use `client.html` or `client.js` to run these tests. Instead, we need to use the test runner, `runner.js`.
 
+If you want to test locally using WebDriver, switch off unnecessary browser capabilities:
+
+```js
+	environments: [
+		// { browserName: 'internet explorer', version: '11', platform: 'Windows 8.1' },
+		// { browserName: 'internet explorer', version: '10', platform: 'Windows 8' },
+		// { browserName: 'internet explorer', version: '9', platform: 'Windows 7' },
+		{ browserName: 'firefox', version: '28 }
+		// { browserName: 'chrome', version: '34', platform: [ 'OS X 10.9', 'Windows 7', 'Linux' ] },
+		// { browserName: 'safari', version: '6', platform: 'OS X 10.8' },
+		// { browserName: 'safari', version: '7', platform: 'OS X 10.9' }
+	],
+
+```
+
+and change the tunnel into:
+
+```js
+	tunnel: 'NullTunnel',
+```
+
+Execute `node_modules/webdriver-manager/bin/webdriver-manager start` on another console to fire up a selenium server instance.
+Open up [http://localhost:4444/wd/hub/status](http://localhost:4444/wd/hub/status). It should print JSON with a `status` field contains 0.
+
+Run `node_modules/.bin/intern-runner config=tests/intern` to start the functional test. You should see something similar to:
+
+```
+$ node_modules/webdriver-manager/bin/webdriver-manager start
+
+Listening on 0.0.0.0:9000
+Starting tunnel...
+Initialised firefox 38.0 on LINUX
+
+=============================== Coverage summary ===============================
+Statements   : 100% ( 4/4 )
+Branches     : 100% ( 2/2 )
+Functions    : 100% ( 2/2 )
+Lines        : 100% ( 4/4 )
+================================================================================
+firefox 38.0 on LINUX: 0/2 tests failed
+
+---------------|-----------|-----------|-----------|-----------|
+File           |   % Stmts |% Branches |   % Funcs |   % Lines |
+---------------|-----------|-----------|-----------|-----------|
+   app/        |       100 |       100 |       100 |       100 |
+      hello.js |       100 |       100 |       100 |       100 |
+---------------|-----------|-----------|-----------|-----------|
+All files      |       100 |       100 |       100 |       100 |
+---------------|-----------|-----------|-----------|-----------|
+
+TOTAL: tested 1 platforms, 0/2 tests failed
+
+```
+
 ## Step 5: Everything all together
 
 At this point, all our tests are written and Intern is fully configured. The only thing that’s left to do is to run all our tests on all the platforms we want to support. To do this efficiently, instead of using the client, we’ll use the test runner.
 
-Unlike the client, which simply runs tests in whichever environment it is loaded, the test runner is responsible for setting up and executing tests against all the environments specified in our configuration, as well as acting as the server for driving functional tests. It also adds instrumentation to code so that we can analyze how much of our code is actually being executed by our tests. Using the runner works basically the same as running `client.js`, except that since we are using Sauce Labs we also need to provide our Sauce credentials:
+Unlike the client, which simply runs tests in whichever environment it is loaded, the test runner is responsible for setting up and executing tests against all the environments specified in our configuration, as well as acting as the server for driving functional tests. It also adds instrumentation to code so that we can analyze how much of our code is actually being executed by our tests. Using the runner works basically the same as running `client.js`, when using Sauce Labs we also need to provide our Sauce credentials (remember to switch on desired browser capabilities and change the tunnel value on `tests/intern.js` into `SauceLabsTunnel`):
 
 ```bash
 SAUCE_USERNAME=<your username> SAUCE_ACCESS_KEY=<your access key> ./node_modules/.bin/intern-runner config=tests/intern
@@ -283,6 +339,7 @@ You may instead specify your Sauce Labs username and access key on the `tunnelOp
 ```
 
 However, keep in mind that putting this information in the configuration exposes your username and access key to others.
+
 
 If everything was done correctly, you should see the results of the test run being output to your terminal:
 
