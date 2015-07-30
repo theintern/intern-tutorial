@@ -10,6 +10,6 @@
 	"bugs": "https://github.com/theintern/intern-tutorial/issues",
 	"homepage": "http://theintern.io/",
 	"devDependencies": {
-		"intern": "2.1.1"
+		"intern": "^3.0.0"
 	}
 }

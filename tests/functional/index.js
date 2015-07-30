@@ -1,8 +1,7 @@
-define([
-	'intern!object',
-	'intern/chai!assert',
-	'require'
-], function (registerSuite, assert, require) {
+define(function (require) {
+	var registerSuite = require('intern!object');
+	var assert = require('intern/chai!assert');
+
 	registerSuite({
 		name: 'index',
 
@@ -21,7 +20,8 @@ define([
 				.findById('greeting')
 				.getVisibleText()
 				.then(function (text) {
-					assert.strictEqual(text, 'Hello, Elaine!', 'Greeting should be displayed when the form is submitted');
+					assert.strictEqual(text, 'Hello, Elaine!',
+						'Greeting should be displayed when the form is submitted');
 				});
 		}
 	});
