@@ -13,6 +13,7 @@ Once you have all the necessary prerequisites, download the demo application by 
 git clone https://github.com/theintern/intern-tutorial.git
 ```
 
+Place the demo application in a web document root on your machine. The app only runs using http://, not file://.
 The application itself consists of a basic HTML page and a single “app” package.
 
 *In order for the demo application to work properly during the tutorial, make sure that you access it using a real Web server. Like most applications, it will not work from a file: URL, due to cross-protocol browser security restrictions.*
