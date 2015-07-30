@@ -1,17 +1,12 @@
 {
 	"name": "intern-tutorial",
-	"version": "2.0.0",
+	"version": "3.0.0",
 	"description": "Intern tutorial. Learn how to use Intern by following this tutorial!",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/theintern/intern-tutorial.git"
 	},
-	"licenses": [
-		{
-			"type": "BSD-3-Clause",
-			"url": "https://github.com/theintern/intern/blob/geezer/LICENSE"
-		}
-	],
+	"license": "BSD-3-Clause",
 	"bugs": "https://github.com/theintern/intern-tutorial/issues",
 	"homepage": "http://theintern.io/",
 	"devDependencies": {
