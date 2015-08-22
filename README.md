@@ -179,18 +179,25 @@ All files  |      100 |      100 |      100 |      100 |                |
 
 *Note: The “tests failed” line appears twice because it is displayed once at the end of each test suite, then again at the end of the entire test run with the total count. Since we only have one test suite, the two values are identical.*
 
-If `intern-tutorial` is within the scope of an htttp server, these same tests can be run directly within a Web browser by navigating to `http://path/to/intern-tutorial/node_modules/intern/client.html?config=tests/intern`. You don’t actually need Node.js to be installed at all to use `client.html`.
+If `intern-tutorial` is within the scope of an http server, these same tests can be run directly within a web browser by navigating to `http://path/to/intern-tutorial/node_modules/intern/client.html?config=tests/intern`. You don’t actually need Node.js to be installed at all to use `client.html`.
 
 #### Example using python SimpleHTTPServer.  
 
-    cd /home/yourself/tryout/intern-tutorial
-    python -m SimpleHTTPServer 8080
+    yourself@vm:~$cd ~/tryout
+    yourself@vm:~/tryout$ tree -L 2
+    .
+    └── intern-tutorial
+        ├── app
+        ├── index.html
+        ├── node_modules
+        ├── package.json
+        ├── README.md
+        └── tests
+    yourself@vm:~/tryout$ python -m SimpleHTTPServer 8080
 
-To see the greeting page simply open [the local host at port 8080](http://localhost:8080/).
+To see the greeting page simply open [http://localhost:8080/intern-tutorial/](http://localhost:8080/intern-tutorial/).
 
-To **test** the greeting page go to [http://localhost:8080/node_modules/intern/client.html?config=tests/intern](http://localhost:8080/node_modules/intern/client.html?config=tests/intern).
-
-
+To **test** the greeting page go to [http://localhost:8080/intern-tutorial/node_modules/intern/client.html?config=tests/intern](http://localhost:8080/intern-tutorial/node_modules/intern/client.html?config=tests/intern).
 
 
 ## Step 4: Write a functional test
