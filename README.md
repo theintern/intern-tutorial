@@ -266,6 +266,10 @@ Because functional tests require a server to drive the browser, we can’t use `
 
 At this point, all our tests are written and Intern is fully configured. The only thing that’s left to do is to run all our tests on all the platforms we want to support. To do this efficiently, instead of using the client, we’ll use the test runner.
 
+```bash
+./node_modules/.bin/intern-runner config=tests/intern
+```
+
 Unlike the client, which simply runs tests in whichever environment it is loaded, the test runner is responsible for setting up and executing tests against all the environments specified in our configuration, as well as acting as the server for driving functional tests. It also adds instrumentation to code so that we can analyze how much of our code is actually being executed by our tests. Using the runner works basically the same as running `intern-client`, except that since we are using BrowserStack we also need to provide our BrowserStack credentials:
 
 ```bash
