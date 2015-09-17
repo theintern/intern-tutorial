@@ -179,7 +179,7 @@ All files  |      100 |      100 |      100 |      100 |                |
 
 *Note: The “tests failed” line appears twice because it is displayed once at the end of each test suite, then again at the end of the entire test run with the total count. Since we only have one test suite, the two values are identical.*
 
-These same tests can be run directly within a Web browser by navigating to `http://path/to/intern-tutorial/node_modules/intern/client.html?config=tests/intern`. (In fact, you don’t need Node.js to be installed at all to use `client.html`.)
+These same tests can be run directly within a Web browser by navigating to `http://intern-tutorial-from-webserver/node_modules/intern/client.html?config=tests/intern`. (In fact, you don’t need Node.js to be installed at all to use `client.html`.)
 
 ## Step 4: Write a functional test
 
