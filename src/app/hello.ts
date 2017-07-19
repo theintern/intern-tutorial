@@ -1,13 +1,8 @@
 /*
- * A very simple AMD module with no dependencies
+ * A very simple module with no dependencies
  */
 
-define([], function () {
-	return {
-		greet: function (name) {
-			name = name || 'world';
-
-			return 'Hello, ' + name + '!';
-		}
-	};
-});
+export function greet(name?: string) {
+	name = name || 'world';
+	return `Hello, ${name}!`;
+}

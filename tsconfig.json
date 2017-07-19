@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "target": "es5",
+    "module": "commonjs",
+    "lib": [
+      "dom",
+      "es5",
+      "es2015.iterable",
+      "es2015.symbol",
+      "es2015.symbol.wellknown"
+    ],
+    "sourceMap": true,
+    "importHelpers": true,
+    "noImplicitAny": true,
+    "moduleResolution": "node",
+    "outDir": "_dist",
+    "rootDir": "."
+  },
+  "include": [
+    "./src/**/*.ts"
+  ]
+}
