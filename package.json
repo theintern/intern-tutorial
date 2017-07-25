@@ -17,6 +17,7 @@
     "@types/systemjs": "~0.20.2",
     "concurrently": "~3.5.0",
     "cpx": "~1.5.0",
+    "intern": "~4.0.0-alpha.10",
     "typescript": "~2.4.1"
   },
   "scripts": {
@@ -25,6 +26,8 @@
     "compile": "tsc -p .",
     "compile:watch": "tsc -p . --watch",
     "copy": "cpx \"src/**/*.{js,html,css}\" _dist/src",
-    "copy:watch": "cpx \"src/**/*.{js,html,css}\" _dist/src --watch"
+    "copy:watch": "cpx \"src/**/*.{js,html,css}\" _dist/src --watch",
+    "pretest": "npm run build",
+    "test": "intern"
   }
 }

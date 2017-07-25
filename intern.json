@@ -1,0 +1,13 @@
+{
+  "suites": "_dist/tests/unit/hello.js",
+  "functionalSuites": "_dist/tests/functional/index.js",
+  "browser": {
+    "loader": {
+      "script": "systemjs"
+    },
+    "plugins": "_dist/src/system.config.js"
+  },
+  "environments": { "browserName": "chrome" },
+  "excludeInstrumentation": "(?:node_modules|tests)\\/|system\\.config\\.js$",
+  "reporters": [ "runner", "htmlcoverage" ]
+}
