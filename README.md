@@ -264,7 +264,7 @@ suite('index', () => {
 
 Or look something like this using async/await:
 
-```
+```ts
 const { suite, test, before } = intern.getInterface('tdd');
 const { assert } = intern.getPlugin('chai');
 
