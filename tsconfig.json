@@ -24,9 +24,5 @@
       "intern",
       "systemjs"
     ]
-  },
-  "include": [
-    "./src/**/*.ts",
-    "./tests/**/*.ts"
-  ]
+  }
 }
