@@ -9,7 +9,25 @@
   },
   "environments": { "browserName": "chrome" },
   "coverage": [
-    "_dist/src/app/**/*.js"
+    "_dist/src/**/*.js",
+    "!_dist/src/system.config.js"
   ],
-  "reporters": [ "runner", "htmlcoverage" ]
+  "reporters+": "htmlcoverage",
+  "configs": {
+    "browserstack": {
+      "tunnel": "browserstack",
+      "maxConcurrency": 2,
+      "capabilities": {
+        "idle-timeout": 60,
+        "fixSessionCapabilities": "no-detect"
+      },
+      "environments": [
+        { "browser": "internet explorer", "version": "10" },
+        { "browser": "internet explorer", "version": "11", "fixSessionCapabilities": true },
+        { "browser": "firefox", "version": [ "latest" ], "platform": [ "WINDOWS", "MAC" ] },
+        { "browser": "chrome", "version": [ "latest" ], "platform": [ "WINDOWS", "MAC" ] },
+        { "browser": "safari", "version": [ "9", "10" ] }
+      ]
+    }
+  }
 }
