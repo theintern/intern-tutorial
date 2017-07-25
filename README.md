@@ -4,16 +4,26 @@ In this tutorial, we will walk through how to set up, write tests, and run tests
 
 * A Bourne-compatible shell, like bash or zsh (or knowledge to execute equivalent commands in your environment)
 * [Git](http://gitscm.com/)
-* [Node 0.10+](http://nodejs.org/)
+* [Node 4.0.0+](http://nodejs.org/) and [npm 5.3.0+](https://www.npmjs.com/package/npm)
 * A [free BrowserStack Automate trial account](https://www.browserstack.com/users/sign_up)
 
-Once you have all the necessary prerequisites, download the demo application by cloning this repository:
+Once you have all the necessary prerequisites, download the demo application by cloning this repository and installing the dependencies:
 
 ```bash
 git clone https://github.com/theintern/intern-tutorial.git
+cd intern-tutorial
+npm install
 ```
 
-The application itself consists of a basic HTML page and a single “app” package.
+The application itself consists of a basic HTML page and a single “app” package written in TypeScript. Several `npm` scripts have been provided to get up and running:
+
+* `npm run compile` - runs the TypeScript compiler once
+* `npm run compile:watch` - runs the TypeScript compiler in watch mode (runs the compiler, waits for changes, and re-compiles when changes are detected)
+* `npm run copy` - copies any assets from `src` to `_dist/src`
+* `npm run copy:watch` - watches for changes to assets in `src` and copies files to `_src/dist` when changes are detected
+* `npm run build` - runs `npm run build` and `npm run copy` in parallel
+* `npm run build:watch` - runs `npm run build:watch` and `npm run copy:watch` in parallel
+* `npm test` - builds the application and runs Intern
 
 *In order for the demo application to work properly during the tutorial, make sure that you access it using a real Web server. Like most applications, it will not work from a file: URL, due to cross-protocol browser security restrictions.*
 
@@ -36,47 +46,62 @@ This is a powerful notion: Intern allows us to test *code* with regular unit tes
 Intern is distributed as an [npm package](https://npmjs.org/package/intern) so it can be easily added as a dependency to any JavaScript project. We’ve created a basic [package.json](https://npmjs.org/doc/json.html) already for our demo application and will install Intern using `npm install --save-dev` so that npm adds it automatically as a development dependency:
 
 ```bash
-cd intern-tutorial
-npm install --save-dev intern
+npm install --save-dev intern@next
+```
+
+We also need to tell TypeScript to load Intern's and SystemJS's type definitions by default. Add the following to the `"compilerOptions"` object in `tsconfig.json`:
+
+```json
+    "typeRoots": [
+      "./node_modules/@types",
+      "./node_modules/intern/types"
+    ],
+    "types": [
+      "intern",
+      "systemjs"
+    ]
 ```
 
 That’s it! Installation is complete.
 
 ## Step 2: Configuring Intern
 
-Intern needs to be configured so it can find our tests and know how we want to run them. This is done by creating an Intern configuration file, but first we need to create a place for it to live. For this tutorial, we’ll place the configuration file and tests within a `tests` subdirectory of the project, so create one at `intern-tutorial/tests`:
+Intern needs to be configured so it can find our tests and know how we want to run them. This is done by creating an Intern configuration file named `intern.json` at the root of our project:
 
-```bash
-mkdir tests
+```json
+{
+  "browser": {
+    "loader": {
+        "script": "systemjs"
+    },
+    "plugins": "_dist/src/system.config.js"
+  },
+  "environments": { "browserName": "chrome" }
+}
 ```
 
-Next, copy the example configuration file that comes with Intern to `intern-tutorial/tests/intern.js`:
+This configuration tells Intern that, in the browser, we want to use SystemJS to load modules and we want to load our SystemJS configuration. It also tells Intern that, in addition to running our unit tests in Node.js, we want to run our tests in Chrome. You can find descriptions of all the possible settings in [the Configuration section of the Intern documetation](https://github.com/theintern/intern/blob/master/docs/configuration.md).
+
+We’ll be doing a little more configuration shortly when we start adding tests, but for now, we already have a complete configuration. You can verify that everything is working by running Intern:
 
 ```bash
-cp node_modules/intern/tests/example.intern.js tests/intern.js
+npm test
 ```
 
-This example configuration provides us with some default settings that work well for most projects. You can find descriptions of all the possible settings in [the Configuration section of the user guide](https://theintern.github.io/intern/#common-config).
-
-We’ll be doing a little more configuration shortly when we start adding tests, but for now, we already have a complete configuration. You can verify that everything is working by running the Node.js client, passing the ID of the configuration module we just created (which is relative to the current working directory) as `config`:
-
-```bash
-./node_modules/.bin/intern-client config=tests/intern
-```
-
-*Note: If you install Intern globally and your `PATH` is configured properly, you can simply run `intern-client` instead.*
+*Note: If you install Intern globally and your `PATH` is configured properly, you can simply run `intern` instead.*
 
 It should output:
 
 ```
-0/0 tests failed
+No unit test coverage for node
+node: 0 passed, 0 failed
 ```
 
 Now that we’ve configured Intern, we need to create a test module which will contain the actual tests for our application.
 
 ## Step 3: Write a unit test
 
-There are several different popular syntaxes for writing unit tests, and Intern comes with built-in support for several of them, including [TDD, BDD](https://theintern.github.io/intern/#interface-tdd), [object](https://theintern.github.io/intern/#interface-object), and [QUnit](https://theintern.github.io/intern/#interface-qunit). In this tutorial, we will use the **object** syntax, but this is an individual preference. All of these interfaces support the same basic functionality, so pick whichever one you think is the clearest when you start writing your own tests!
+There are several different popular syntaxes for writing unit tests, and Intern comes with built-in support for several of them, including [TDD, BDD](https://theintern.github.io/intern/#interface-tdd), [object](https://theintern.github.io/intern/#interface-object), and [QUnit](https://theintern.github.io/intern/#interface-qunit). In this tutorial, we will use the **tdd** syntax, but this is an individual preference. All of these interfaces support the same basic functionality, so pick whichever one you think is the clearest when you start writing your own tests!
 
 Before getting any further into writing tests, we need to take a moment to review the terminology that is used by Intern:
 
@@ -84,7 +109,7 @@ Before getting any further into writing tests, we need to take a moment to revie
 * A **test interface** is a programming interface for registering tests with Intern
 * A **test case** (or, just **test**) is a function that makes calls to application code and makes assertions about what it should have done
 * A **test suite** is a collection of tests (and, optionally, sub–test-suites) that are related to each other
-* A **test module** is a JavaScript module in AMD format that contains test suites
+* A **test module** is a JavaScript module that contains test suites
 
 These pieces can be visualized in a hierarchy, like this:
 
@@ -107,40 +132,35 @@ These pieces can be visualized in a hierarchy, like this:
 Test modules are typically split up so that there’s one test module for each corresponding code module being tested. First, create a new subdirectory for storing all of the unit tests:
 
 ```bash
-mkdir tests/unit
+mkdir -p tests/unit
 ```
 
-We have one code module in our demo app (`app/hello`), so we’ll create a new unit test module at `intern-tutorial/tests/unit/hello.js` and put the following boilerplate into it:
+We have one code module in our demo app (`app/hello`), so we’ll create a new unit test module at `intern-tutorial/tests/unit/hello.ts` and put the following boilerplate into it:
 
-```js
-define(function (require) {
-	var registerSuite = require('intern!object');
-	var assert = require('intern/chai!assert');
-	var hello = require('app/hello');
-});
+```ts
+const { suite, test } = intern.getInterface('tdd');
+const { assert } = intern.getPlugin('chai');
+
+import { greet } from '../../src/app/hello';
 ```
 
-This bit of code loads the object test interface as `registerSuite`, the assertion interface as `assert`, and the code we want to test as `hello`.
+This bit of code loads the `suite` and `test` functions from the TDD test interface, the `assert` function of [Chai](http://chaijs.com/api/assert/), and the `greet` function we want to test.
 
-Now that the basics of our `hello` test module are in place, the next step is to use `registerSuite` to register a test suite with some tests for our app. We’ll start by testing the `hello.greet` method.
+Now that the basics of our `hello` test module are in place, the next step is to use `suite` to register a test suite and `test` to register a test case for our app. We’ll start by testing the `greet` function.
 
 Looking at the source code for `app/hello`, we can see that when `greet` is called it will return the string `"Hello, world!"` if no name is passed, or `"Hello, <name>!"` if a name is passed. We need to make sure we test both of these code branches. If we’ve done it right, our test code will end up looking something like this:
 
-```js
-define(function (require) {
-	var registerSuite = require('intern!object');
-	var assert = require('intern/chai!assert');
-	var hello = require('app/hello');
+```ts
+const { suite, test } = intern.getInterface('tdd');
+const { assert } = intern.getPlugin('chai');
 
-	registerSuite({
-		name: 'hello',
+import { greet } from '../../src/app/hello';
 
-		greet: function () {
-			assert.strictEqual(hello.greet('Murray'), 'Hello, Murray!',
-				'hello.greet should return a greeting for the person named in the first argument');
-			assert.strictEqual(hello.greet(), 'Hello, world!',
-				'hello.greet with no arguments should return a greeting to "world"');
-		}
+suite('hello', () => {
+	test('greet', () => {
+		assert.strictEqual(greet('Murray'), 'Hello, Murray!',
+			'greet should return a greeting for the person named in the first argument');
+		assert.strictEqual(greet(), 'Hello, world!', 'greet with no arguments should return a greeting to "world"');
 	});
 });
 ```
@@ -149,138 +169,257 @@ define(function (require) {
 
 In this test module, we’ve registered a new suite for our `hello` module and named it “hello”, written a new test case for the `greet` method and named it “greet”, and added two assertions: one where we call `greet` and pass an argument, and one where we call `greet` without any argument. If either of these assertions fails, they will throw an error and the test case will be considered failed at that point.
 
-Each of our assertions also contains a message that describes what logic the assertion is actually checking. Similar to good code comments that describe *why* a piece of code exists, these messages are used to describe the intent of the code being checked rather than simply describing the assertion. For instance, “Calling hello.greet('Murray') should return "Hello, Murray!"” would be a bad assertion message because it just describes what the assertion is doing, rather than describing the desired outcome. With the message we’ve used in the code above, if the `hello.greet` method were changed in the future to return `"Hi, <name>!"` instead, it would be clear that the test itself needed to be updated because the code still fulfils the described business logic. Similarly, if the method were changed to return `"You suck, <name>!"` instead, it would then be clear that the application code was updated incorrectly.
+Each of our assertions also contains a message that describes what logic the assertion is actually checking. Similar to good code comments that describe *why* a piece of code exists, these messages are used to describe the intent of the code being checked rather than simply describing the assertion. For instance, “Calling greet('Murray') should return "Hello, Murray!"” would be a bad assertion message because it just describes what the assertion is doing, rather than describing the desired outcome. With the message we’ve used in the code above, if the `greet` function were changed in the future to return `"Hi, <name>!"` instead, it would be clear that the test itself needed to be updated because the code still fulfils the described business logic. Similarly, if the method were changed to return `"You suck, <name>!"` instead, it would then be clear that the application code was updated incorrectly.
 
-The final step when writing a new test module is to add the [module’s identifier](https://github.com/amdjs/amdjs-api/blob/master/AMD.md#id-) to our configuration file so that it is loaded when we run Intern. To do this, in the `suites` array, add the string `'tests/unit/hello'`:
+The final step when writing a new test module is to add the **compiled** module's path to our configuration file so that it is loaded when we run Intern. To do this, add a `suites` property to the top-level object of `intern.json` with the string `"_dist/tests/unit/hello.js"`:
 
 ```js
-	// ...
-	// Unit test modules to run in each browser
-	suites: [ 'tests/unit/hello' ],
-	// ...
+{
+  "suites": "_dist/tests/unit/hello.js",
 ```
 
-Now if we go back and run the same client.js command from the end of Step 2, we will actually see our tests running and passing:
+Now if we go back and run the same `npm test` command from the end of Step 2, we will actually see our tests running in both Node.js and Chrome and passing:
 
 ```
-PASS: hello - greet (5ms)
-0/1 tests failed
-0/1 tests failed
+Listening on localhost:9000 (ws 9001)
+Tunnel started
+✓ node - hello - greet (0.001s)
+No unit test coverage for node
+node: 1 passed, 0 failed
 
------------|----------|----------|----------|----------|----------------|
-File       |  % Stmts | % Branch |  % Funcs |  % Lines |Uncovered Lines |
------------|----------|----------|----------|----------|----------------|
- app/      |      100 |      100 |      100 |      100 |                |
-  hello.js |      100 |      100 |      100 |      100 |                |
------------|----------|----------|----------|----------|----------------|
-All files  |      100 |      100 |      100 |      100 |                |
------------|----------|----------|----------|----------|----------------|
+‣ Created remote session chrome 59.0.3071.115 on MAC (714dfe2b-ebc0-4249-b235-a3756d004fc8)
+✓ chrome 59.0.3071.115 on MAC - hello - greet (0.001s)
+No unit test coverage for chrome 59.0.3071.115 on MAC
+chrome 59.0.3071.115 on MAC: 1 passed, 0 failed
+TOTAL: tested 2 platforms, 2 passed, 0 failed
 ```
 
-*Note: The “tests failed” line appears twice because it is displayed once at the end of each test suite, then again at the end of the entire test run with the total count. Since we only have one test suite, the two values are identical.*
-
-These same tests can be run directly within a Web browser by navigating to `http://path/to/intern-tutorial/node_modules/intern/client.html?config=tests/intern`. (In fact, you don’t need Node.js to be installed at all to use `client.html`.)
+These same tests can be run directly within a Web browser by running `npm test serveOnly` and navigating to `http://localhost:9000/__intern/index.html`.
 
 ## Step 4: Write a functional test
 
-Functional tests are different from unit tests in that they *mimic user interaction* by sending commands to browsers using an external server instead of running directly in the environment being tested. This enables us to generate real DOM events and test UI interactions just like a real user, with no JavaScript security sandbox limitations. As well as enabling testing of sandbox-restricted actions like file uploads, functional testing also allows us to test interactions that span multiple pages and interactions with third party sites (like OAuth authorization flows). Our demo app contains an HTML file with a basic form that should display a greeting using `hello.greet`. For this tutorial, we’ll simulate a user filling out a form and clicking a button to submit it in order to verify this page works as expected.
+Functional tests are different from unit tests in that they *mimic user interaction* by sending commands to browsers using an external server instead of running directly in the environment being tested. This enables us to generate real DOM events and test UI interactions just like a real user, with no JavaScript security sandbox limitations. As well as enabling testing of sandbox-restricted actions like file uploads, functional testing also allows us to test interactions that span multiple pages and interactions with third party sites (like OAuth authorization flows). Our demo app contains an HTML file with a basic form that should display a greeting using `app/hello.greet`. For this tutorial, we’ll simulate a user filling out a form and clicking a button to submit it in order to verify this page works as expected.
 
 Intern’s functional testing is based on the [standard WebDriver protocol](http://www.w3.org/TR/webdriver/) and comes with built-in support for remote testing services as well as [self-hosted WebDriver servers](http://docs.seleniumhq.org/docs/03_webdriver.jsp#running-standalone-selenium-server-for-use-with-remotedrivers). The rest of this tutorial assumes you are using BrowserStack.
 
 To get started, create a new directory to hold the functional tests (in order to differentiate them from our normal unit tests) at `intern-tutorial/tests/functional`:
 
 ```bash
-mkdir tests/functional
+mkdir -p tests/functional
 ```
 
-Next, create a test module at `intern-tutorial/tests/functional/index.js` with the following boilerplate:
+Next, create a test module at `intern-tutorial/tests/functional/index.ts` with the following boilerplate:
 
-```js
-define(function (require) {
-	var registerSuite = require('intern!object');
-	var assert = require('intern/chai!assert');
+```ts
+const { suite, test, before } = intern.getInterface('tdd');
+const { assert } = intern.getPlugin('chai');
 
-	registerSuite({
-		name: 'index',
+suite('index', () => {
+	before(() => {
+	});
 
-		'greeting form': function () {
-
-		}
+	test('greeting form', () => {
 	});
 });
 ```
 
-Just like our unit test before, we’re using the object test interface and assert-style assertions. However, instead of loading any application code directly, we’ll be using the special `require` function to generate a URL to load in the browser.
+Just like our unit test before, we’re using the object test interface and assert-style assertions. However, instead of loading any application code directly, we’ll be using WebDriver to load our page in the browser.
 
-To facilitate functional testing, an object is exposed to tests at `this.remote` that provides an interface for interacting with the remote browser environment. Using the methods on `this.remote`, we can load a Web page, interact with it, and retrieve data from it to assert that our actions caused the expected result. Since all calls to the remote browser are asynchronous, this interface allows us to chain commands (like jQuery) and retrieve results using standard promises-style `then` calls. When we make a call, it is enqueued and executed once all the previous commands have completed. If this description is a little confusing, don’t worry—it should be clearer once we look at some code.
+To facilitate functional testing, an object is passed to every lifecycle and test function which has a `remote` remote property. The `remote` property exposes an object that provides an interface for interacting with the remote browser environment. Using the methods on `remote`, we can load a Web page, interact with it, and retrieve data from it to assert that our actions caused the expected result. Since all calls to the remote browser are asynchronous, all methods of the `remote` object return promises. This allows us to either chain commands (like jQuery) and retrieve results using standard promises-style `then` calls or use async/await to write synchronous-looking tests. When we make a call, it is enqueued and executed once all the previous commands have completed. If this description is a little confusing, don’t worry—it should be clearer once we look at some code.
 
-Looking at the HTML page at `index.html`, we can see that it consists of a simple form with a single input. Once this page and all required scripts are loaded, a CSS class name of "loaded" is added to the body element. We want to make sure this form works properly by testing interaction like a real user: focusing the input, typing a string, and clicking submit. We can then verify that the greeting was properly updated. Once finished, this test will look something like this:
+Looking at the HTML page at `index.html`, we can see that it consists of a simple form with a single input. It loads `app/main` which sets up our event listeners and adds a CSS class of "loaded" to the body element. We want to make sure this form works properly by testing interaction like a real user: focusing the input, typing a string, and clicking submit. We can then verify that the greeting was properly updated. Once finished, this test will look something like this using chained calls:
 
-```js
-define(function (require) {
-	var registerSuite = require('intern!object');
-	var assert = require('intern/chai!assert');
+```ts
+const { suite, test, before } = intern.getInterface('tdd');
+const { assert } = intern.getPlugin('chai');
 
-	registerSuite({
-		name: 'index',
+suite('index', () => {
+	before(({ remote }) => {
+		return remote
+			.get('_dist/src/index.html')
+			.setFindTimeout(5000)
+			.findDisplayedByCssSelector('body.loaded')
+		;
+	});
 
-		'greeting form': function () {
-			return this.remote
-				.get(require.toUrl('index.html'))
-				.setFindTimeout(5000)
-				.findByCssSelector('body.loaded')
-				.findById('nameField')
-					.click()
-					.type('Elaine')
-					.end()
-				.findByCssSelector('#loginForm input[type=submit]')
-					.click()
-					.end()
-				.findById('greeting')
+	test('greeting form', ({ remote }) => {
+		return remote
+			.findById('nameField')
+				.click()
+				.type('Elaine')
+			.end()
+			.findByCssSelector('#loginForm input[type=submit]')
+				.click()
+			.end()
+			.findById('greeting')
 				.getVisibleText()
-				.then(function (text) {
+				.then((text) => {
 					assert.strictEqual(text, 'Hello, Elaine!',
 						'Greeting should be displayed when the form is submitted');
-				});
-		}
+				})
+		;
+	});
+});
+```
+
+Or look something like this using async/await:
+
+```
+const { suite, test, before } = intern.getInterface('tdd');
+const { assert } = intern.getPlugin('chai');
+
+suite('index', () => {
+	before(async ({ remote }) => {
+		await remote.get('_dist/src/index.html');
+		await remote.setFindTimeout(5000);
+		await remote.findDisplayedByCssSelector('body.loaded');
+	});
+
+	test('greeting form', async ({ remote }) => {
+		const name = await remote.findById('nameField');
+		await name.click();
+		await name.type('Elaine');
+
+		const button = await remote.findByCssSelector('#loginForm input[type=submit]');
+		await button.click();
+
+		const greeting = await remote.findById('greeting');
+		const text = await greeting.getVisibleText();
+
+		assert.strictEqual(text, 'Hello, Elaine!', 'Greeting should be displayed when the form is submitted');
 	});
 });
 ```
 
 *Note: To learn which methods are available on the `remote` object, check Leadfoot’s [Command object documentation](https://theintern.github.io/leadfoot/Command.html).*
 
-In the code above, calling `remote.get` loads the HTML page we want to test into the browser, using the `require.toUrl` function to convert the path `index.html` to a fully qualified URL. Then, we wait for the “loaded” CSS class to appear on the body, for a maximum of five seconds. Once this element exists, we go through the process of finding, clicking, and typing into elements. Finally, we retrieve the text from the greeting element and check it to confirm that it matches what was expected.
+In the code above, calling `remote.get` loads the HTML page we want to test into the browser. Then, we wait for the “loaded” CSS class to appear on the body, for a maximum of five seconds. Once this element exists, we go through the process of finding, clicking, and typing into elements. Finally, we retrieve the text from the greeting element and check it to confirm that it matches what was expected.
 
-Now that this test module is complete, the final step is to add it to our Intern configuration in the special `functionalSuites` array:
+Now that this test module is complete, the final step is to add it to our Intern configuration in the special `functionalSuites` top-level property:
 
-```js
-	// ...
-	// Functional test suite(s) to execute against each browser once non-functional tests are completed
-	functionalSuites: [ 'tests/functional/index' ],
-	// ...
+```json
+  "functionalSuites": "_dist/tests/functional/index.js",
 ```
 
-Because functional tests require a server to drive the browser, we can’t use `client.html` or `intern-client` to run these tests. Instead, we need to use the test runner, `intern-runner`.
+Now if we go back and run the same `npm test` command from the end of Steps 2 and 3, we will see our unit tests running in both Node.js and Chrome, our functional tests running in Chrome, and all of them passing:
 
-## Step 5: Everything all together
+```
+Listening on localhost:9000 (ws 9001)
+Tunnel started
+✓ node - hello - greet (0.001s)
+No unit test coverage for node
+node: 1 passed, 0 failed
 
-At this point, all our tests are written and Intern is fully configured. The only thing that’s left to do is to run all our tests on all the platforms we want to support. To do this efficiently, instead of using the client, we’ll use the test runner.
+‣ Created remote session chrome 59.0.3071.115 on MAC (f1bffddb-f4ae-46ba-8633-2357f925939d)
+✓ chrome 59.0.3071.115 on MAC - hello - greet (0.001s)
+✓ chrome 59.0.3071.115 on MAC - index - greeting form (0.236s)
+No unit test coverage for chrome 59.0.3071.115 on MAC
+chrome 59.0.3071.115 on MAC: 2 passed, 0 failed
+TOTAL: tested 2 platforms, 3 passed, 0 failed
+```
 
-Unlike the client, which simply runs tests in whichever environment it is loaded, the test runner is responsible for setting up and executing tests against all the environments specified in our configuration, as well as acting as the server for driving functional tests. It also adds instrumentation to code so that we can analyze how much of our code is actually being executed by our tests. Using the runner works basically the same as running `intern-client`, except that since we are using BrowserStack we also need to provide our BrowserStack credentials:
+## Step 5: Code coverage
+
+At this point, all of our tests are written and Intern is fully configured for assuring our unit and functional tests pass. The next step is enabling code coverage. Intern is unique in that it not only runs unit and functional tests in one command, but it also can gather coverage information for both types of tests as well! To enable code coverage, set the `"coverage"` property of the top-level object in `intern.json` to a glob pattern (or an array of glob patterns) of compiled files to cover:
+
+```json
+  "environments": { "browserName": "chrome" },
+  "coverage": [
+    "_dist/src/**/*.js",
+    "!_dist/src/system.config.js"
+  ]
+```
+
+This will tell Intern to get coverage information for all JavaScript files in `_dist/src` except for `_dist/src/system.config.js`. Now when we run `npm test`, the output will tell us the coverage we have:
+
+```
+Listening on localhost:9000 (ws 9001)
+Tunnel started
+✓ node - hello - greet (0.001s)
+
+----------|----------|----------|----------|----------|----------------|
+File      |  % Stmts | % Branch |  % Funcs |  % Lines |Uncovered Lines |
+----------|----------|----------|----------|----------|----------------|
+All files |      100 |      100 |      100 |      100 |                |
+ hello.ts |      100 |      100 |      100 |      100 |                |
+----------|----------|----------|----------|----------|----------------|
+node: 1 passed, 0 failed
+
+‣ Created remote session chrome 59.0.3071.115 on MAC (dbc5f5cc-2f89-43e1-b062-7df608334314)
+✓ chrome 59.0.3071.115 on MAC - hello - greet (0.001s)
+✓ chrome 59.0.3071.115 on MAC - index - greeting form (0.231s)
+
+----------|----------|----------|----------|----------|----------------|
+File      |  % Stmts | % Branch |  % Funcs |  % Lines |Uncovered Lines |
+----------|----------|----------|----------|----------|----------------|
+All files |      100 |      100 |      100 |      100 |                |
+ hello.ts |      100 |      100 |      100 |      100 |                |
+----------|----------|----------|----------|----------|----------------|
+chrome 59.0.3071.115 on MAC: 2 passed, 0 failed
+
+Total coverage
+----------|----------|----------|----------|----------|----------------|
+File      |  % Stmts | % Branch |  % Funcs |  % Lines |Uncovered Lines |
+----------|----------|----------|----------|----------|----------------|
+All files |      100 |      100 |      100 |      100 |                |
+ hello.ts |      100 |      100 |      100 |      100 |                |
+ main.ts  |      100 |      100 |      100 |      100 |                |
+----------|----------|----------|----------|----------|----------------|
+TOTAL: tested 2 platforms, 3 passed, 0 failed
+```
+
+One thing to note: Intern (via Istanbul) automatically remaps the coverage information back to our source files using source maps. We can see that the unit tests only report coverage for `hello.ts`, but our functional test - since it exercises the entire application - reports coverage for `main.ts` as well.
+
+Intern also allows us to output an HTML coverage report to see graphically which lines have been exercised by our tests. To enable this feature, add the `htmlcoverage` reporter in the top-level object of `intern.json`:
+
+```json
+    "!_dist/src/system.config.js"
+  ],
+  "reporters+": "htmlcoverage"
+```
+
+As you can see, instead of using `"reporters"`, we have used `"reporters+"`. This will add `"htmlcoverage"` to the default array of reporters instead of overwriting it. When we run `npm test`, we now get the we saw above, but this time we will have an HTML report in `intern-tutorial/coverage/`.
+
+## Step 6: Remote testing
+
+At this point, all our tests are written and Intern is fully configured to run tests locally in Node.js and Chrome. The only thing that’s left to do is to run all our tests on all the platforms we want to support. We'll do this by setting up a `browserstack` configuration within `intern.json` to run our tests with BrowserStack:
+
+```json
+  "reporters+": "htmlcoverage",
+  "configs": {
+    "browserstack": {
+      "tunnel": "browserstack",
+      "maxConcurrency": 2,
+      "capabilities": {
+        "idle-timeout": 60,
+        "fixSessionCapabilities": "no-detect"
+      },
+      "environments": [
+        { "browser": "internet explorer", "version": "10" },
+        { "browser": "internet explorer", "version": "11", "fixSessionCapabilities": true },
+        { "browser": "firefox", "version": [ "latest" ], "platform": [ "WINDOWS", "MAC" ] },
+        { "browser": "chrome", "version": [ "latest" ], "platform": [ "WINDOWS", "MAC" ] },
+        { "browser": "safari", "version": [ "9", "10" ] }
+      ]
+    }
+  }
+```
+
+This sets up a child configuration named `browserstack` with our environments and tunnel. Intern will use this information to communicate with our remote testing service (in this case, BrowserStack) to run our unit and functional tests in all of the browsers we specified in our `environments` array, reporting back test results and coverage for each browser. Since we are using BrowserStack, we will need to provide our credentials and our child configuration name:
 
 ```bash
-BROWSERSTACK_USERNAME=<your username> BROWSERSTACK_ACCESS_KEY=<your access key> ./node_modules/.bin/intern-runner config=tests/intern
+BROWSERSTACK_USERNAME=<your username> BROWSERSTACK_ACCESS_KEY=<your access key> npm test config=@browserstack
 ```
 
-You can also specify your username and access key on the `tunnelOptions` object in your Intern configuration, using the `username` and `accessKey` keys, if you don’t want to put them on the command line:
+You can also specify your username and access key on the `tunnelOptions` object in your Intern configuration, using the `username` and `apiKey` keys, if you don’t want to put them on the command line:
 
-```js
-	// ...
-	tunnelOptions: {
-		username: '<your username>',
-		accessKey: '<your access key>'
-	},
-	// ...
+```json
+      "tunnel": "browserstack",
+      "tunnelOptions": {
+        "username": "<your username>",
+        "apiKey": "<your access key>"
+      },
+      "maxConcurrency": 2,
 ```
 
 However, keep in mind that putting this information in the configuration exposes your username and access key to others.
@@ -288,57 +427,58 @@ However, keep in mind that putting this information in the configuration exposes
 If everything was done correctly, you should see the results of the test run being output to your terminal:
 
 ```
-Listening on 0.0.0.0:9000
+Listening on localhost:9000 (ws 9001)
 Tunnel started
-‣ Created session internet explorer 10 on WIN8 (0f3f3041073c219b2a1bcf3819d673a2eeec3340)
-‣ Created session internet explorer 11 on WIN8 (7fdeee434f89474dc37e348cb583311b526afd13)
-✓ internet explorer 10 on WIN8 - unit tests - hello - greet (0s)
-✓ internet explorer 10 on WIN8 - index - greeting form (3.082s)
+✓ node - hello - greet (0.001s)
 
-=============================== Coverage summary ===============================
-Statements   : 100% ( 4/4 )
-Branches     : 100% ( 2/2 )
-Functions    : 100% ( 2/2 )
-Lines        : 100% ( 4/4 )
-================================================================================
-internet explorer 10 on WIN8: 0/2 tests failed
+----------|----------|----------|----------|----------|----------------|
+File      |  % Stmts | % Branch |  % Funcs |  % Lines |Uncovered Lines |
+----------|----------|----------|----------|----------|----------------|
+All files |      100 |      100 |      100 |      100 |                |
+ hello.ts |      100 |      100 |      100 |      100 |                |
+----------|----------|----------|----------|----------|----------------|
+node: 1 passed, 0 failed
 
-✓ internet explorer 11 on WIN8 - unit tests - hello - greet (0.001s)
-✓ internet explorer 11 on WIN8 - index - greeting form (3.226s)
+‣ Created remote session internet explorer 10 on WINDOWS (2ebde91d356d8dd326514caddc3e600a0aeb58f6)
+✓ internet explorer 10 on WINDOWS - hello - greet (0s)
+✓ internet explorer 10 on WINDOWS - index - greeting form (1.832s)
 
-=============================== Coverage summary ===============================
-Statements   : 100% ( 4/4 )
-Branches     : 100% ( 2/2 )
-Functions    : 100% ( 2/2 )
-Lines        : 100% ( 4/4 )
-================================================================================
-internet explorer 11 on WIN8: 0/2 tests failed
+----------|----------|----------|----------|----------|----------------|
+File      |  % Stmts | % Branch |  % Funcs |  % Lines |Uncovered Lines |
+----------|----------|----------|----------|----------|----------------|
+All files |      100 |      100 |      100 |      100 |                |
+ hello.ts |      100 |      100 |      100 |      100 |                |
+----------|----------|----------|----------|----------|----------------|
+internet explorer 10 on WINDOWS: 2 passed, 0 failed
+
+‣ Created remote session internet explorer 11 on WINDOWS (f8ab8d0a315172af0337b9fcd91ae3457098a906)
+
+‣ Created remote session firefox on windows_nt 6.3 (1cb854da49290a1818d8147244c069504c51775b)
+✓ internet explorer 11 on WINDOWS - hello - greet (0s)
+✓ firefox on windows_nt 6.3 - hello - greet (0.001s)
+✓ internet explorer 11 on WINDOWS - index - greeting form (3.618s)
+
+----------|----------|----------|----------|----------|----------------|
+File      |  % Stmts | % Branch |  % Funcs |  % Lines |Uncovered Lines |
+----------|----------|----------|----------|----------|----------------|
+All files |      100 |      100 |      100 |      100 |                |
+ hello.ts |      100 |      100 |      100 |      100 |                |
+----------|----------|----------|----------|----------|----------------|
 
 ...
 
------------|----------|----------|----------|----------|----------------|
-File       |  % Stmts | % Branch |  % Funcs |  % Lines |Uncovered Lines |
------------|----------|----------|----------|----------|----------------|
- app/      |      100 |      100 |      100 |      100 |                |
-  hello.js |      100 |      100 |      100 |      100 |                |
------------|----------|----------|----------|----------|----------------|
-All files  |      100 |      100 |      100 |      100 |                |
------------|----------|----------|----------|----------|----------------|
-
-TOTAL: tested 8 platforms, 0/16 tests failed
+Total coverage
+----------|----------|----------|----------|----------|----------------|
+File      |  % Stmts | % Branch |  % Funcs |  % Lines |Uncovered Lines |
+----------|----------|----------|----------|----------|----------------|
+All files |      100 |      100 |      100 |      100 |                |
+ hello.ts |      100 |      100 |      100 |      100 |                |
+ main.ts  |      100 |      100 |      100 |      100 |                |
+----------|----------|----------|----------|----------|----------------|
+TOTAL: tested 9 platforms, 17 passed, 0 failed
 ```
 
-In addition to test results, the runner also provides information on how much of your application’s code was actually tested. In the case of our demo app, we’re executing 100% of our available application code, which is an outstanding level of coverage. You can get more detailed information about which parts of your code remain untested by adding the `LcovHtml` reporter, which will create an `html-report` directory containing a line-by-line breakdown of all analysed code. The [Code coverage reporters section](https://theintern.github.io/intern/#reporter-lcov) of the documentation provides more information on the available code coverage reporters.
-
-Whenever you need to run a full test against all platforms, use the test runner. When you are in the process of writing your tests and want to check them for correctness more quickly, you can either use just the Node.js client (for unit tests only) or create an alternate configuration file that only tests against a single local platform, like your local copy of Chrome or Firefox (for all tests, including functional tests).
-
-If you are in the process of writing tests and don’t want to create an entirely new configuration file, but just want to override a specific configuration option, you can specify it on the command-line. For example, to use the `Console` and `LcovHtml` reporters without putting them in the configuration, simply run Intern like this:
-
-```bash
-./node_modules/.bin/intern-client config=tests/intern reporters=Console reporters=LcovHtml
-```
-
-When you start testing your actual application, it’s a good idea to use the test runner in conjunction with a continuous integration service like Travis CI or Jenkins so you know that the code in your repository is passing its tests at all times, and so you can monitor your code coverage figures. Instructions are available in the [continuous integration section](https://theintern.github.io/intern/#ci-jenkins) of the documentation for Jenkins, Travis CI, and TeamCity.
+When you start testing your actual application, it’s a good idea to use Intern in conjunction with a continuous integration service like Travis CI or Jenkins so you know that the code in your repository is passing its tests at all times, and so you can monitor your code coverage figures. Instructions are available in the [continuous integration section](https://theintern.github.io/intern/#ci-jenkins) of the documentation for Jenkins, Travis CI, and TeamCity.
 
 If you’d like a complete working copy of this project with Intern already configured and the tests already written, [download the completed-tutorial branch](https://github.com/theintern/intern-tutorial/archive/completed-tutorial-3.0.0.zip). If you have any questions, please [let us know](https://theintern.github.io/intern/#getting-help). [Pull requests to enhance this tutorial](https://github.com/theintern/intern-tutorial/compare/) are also accepted and appreciated!
 
