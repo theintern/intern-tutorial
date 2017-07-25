@@ -1,13 +1,13 @@
 SystemJS.config({
-	baseURL: './',
+	baseURL: '../../',
 
 	map: {
-		tslib: '../../node_modules/tslib/tslib.js',
-		app: 'app'
+		app: '_dist/src/app',
+		tslib: 'node_modules/tslib/tslib.js'
 	},
 
 	packages: {
-		'app': {
+		app: {
 			defaultExtension: 'js'
 		}
 	}
