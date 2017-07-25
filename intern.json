@@ -8,6 +8,8 @@
     "plugins": "_dist/src/system.config.js"
   },
   "environments": { "browserName": "chrome" },
-  "excludeInstrumentation": "(?:node_modules|tests)\\/|system\\.config\\.js$",
+  "coverage": [
+    "_dist/src/app/**/*.js"
+  ],
   "reporters": [ "runner", "htmlcoverage" ]
 }
