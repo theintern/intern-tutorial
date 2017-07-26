@@ -17,7 +17,7 @@
     "@types/systemjs": "~0.20.2",
     "concurrently": "~3.5.0",
     "cpx": "~1.5.0",
-    "intern": "~4.0.0-alpha.11",
+    "intern": "~4.0.0-alpha.12",
     "typescript": "~2.4.1"
   },
   "scripts": {
