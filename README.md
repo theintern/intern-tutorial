@@ -395,8 +395,7 @@ At this point, all our tests are written and Intern is fully configured to run t
         "fixSessionCapabilities": "no-detect"
       },
       "environments": [
-        { "browser": "internet explorer", "version": "10" },
-        { "browser": "internet explorer", "version": "11", "fixSessionCapabilities": true },
+        { "browser": "internet explorer", "version": [ "10", "11" ] },
         { "browser": "firefox", "version": [ "latest" ], "platform": [ "WINDOWS", "MAC" ] },
         { "browser": "chrome", "version": [ "latest" ], "platform": [ "WINDOWS", "MAC" ] },
         { "browser": "safari", "version": [ "9", "10" ] }
