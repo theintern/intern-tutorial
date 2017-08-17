@@ -1,5 +1,7 @@
 # Intern tutorial
 
+[![Intern](http://theintern.github.io/images/intern-v3.svg)](https://github.com/theintern/intern/tree/3.4)
+
 In this tutorial, we will walk through how to set up, write tests, and run tests using Intern. This repository contains a very basic Hello World demo “application” that we’ll be using as an example to build on. In order to complete this tutorial, you will need the following:
 
 * A Bourne-compatible shell, like bash or zsh (or knowledge to execute equivalent commands in your environment)
