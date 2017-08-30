@@ -1,6 +1,6 @@
 # Intern tutorial
 
-[![Intern](https://theintern.io/images/intern-v3.svg)](https://github.com/theintern/intern/tree/3.4) [![Intern](https://theintern.io/images/intern-v4.svg)](https://github.com/theintern/intern/)
+[![Intern](https://theintern.io/images/intern-v4.svg)](https://github.com/theintern/intern/)
 
 In this tutorial we will walk through how to set up Intern and how to write tests and run tests. This repository contains a very basic Hello World demo “application” that we’ll be using as an example to build on. In order to complete this tutorial, you will need the following:
 
