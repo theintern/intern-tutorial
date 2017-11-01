@@ -49,7 +49,7 @@ This is a powerful notion: Intern allows us to test *code* with regular unit tes
 Intern is distributed as an [npm package](https://npmjs.org/package/intern) so it can be easily added as a dependency to any JavaScript project. We’ll install Intern using `npm install --save-dev` so that npm adds it automatically as a development dependency to application’s [package.json](https://npmjs.org/doc/json.html):
 
 ```bash
-npm install --save-dev intern@next
+npm install --save-dev intern
 ```
 
 We also need to tell TypeScript to load Intern’s and SystemJS’s type definitions by default. Add the following to the `"compilerOptions"` object in `tsconfig.json`:
