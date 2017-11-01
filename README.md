@@ -2,7 +2,7 @@
 
 [![Intern](https://theintern.io/images/intern-v4.svg)](https://github.com/theintern/intern/)
 
-In this tutorial we will walk through how to set up Intern and how to write tests and run tests. This repository contains a very basic Hello World demo “application” that we’ll be using as an example to build on. In order to complete this tutorial, you will need the following:
+In this tutorial we will walk through how to set up Intern and how to write tests and run tests. This repository contains a basic Hello World demo “application” that we’ll be using as an example to build on. In order to complete this tutorial, you will need the following:
 
 * A Bourne-compatible shell, like bash or zsh (or knowledge of how to execute equivalent commands in your environment)
 * [Git](https://git-scm.com/)
@@ -52,13 +52,9 @@ Intern is distributed as an [npm package](https://npmjs.org/package/intern) so i
 npm install --save-dev intern
 ```
 
-We also need to tell TypeScript to load Intern’s and SystemJS’s type definitions by default. Add the following to the `"compilerOptions"` object in `tsconfig.json`:
+We also need to tell TypeScript to load Intern’s and SystemJS’s type definitions by default. This ensures that typings for global variables provided by Intern and SystemJS will be available in tests. Add the following to the `"compilerOptions"` object in `tsconfig.json`:
 
 ```json
-    "typeRoots": [
-        "./node_modules/@types",
-        "./node_modules/intern/types"
-    ],
     "types": [
         "intern",
         "systemjs"
@@ -77,13 +73,21 @@ Intern needs to be configured so it can find and run our tests. This is done by 
         "loader": {
             "script": "systemjs"
         },
-        "plugins": "_dist/src/system.config.js"
+        "plugins": {
+			"script": "_dist/src/system.config.js",
+			"useLoader": true
+		}
     },
-    "environments": { "browserName": "chrome" }
+    "environments": [
+		"node",
+		{ "browserName": "chrome" }
+	]
 }
 ```
 
-This configuration tells Intern that, in the browser, we want to use SystemJS to load modules, and that we want to load a plugin to configure SystemJS. It also tells Intern that, in addition to running our unit tests in Node.js, we want to run our tests in Chrome. You can find descriptions of all the possible settings in [the Configuration section of the Intern documentation](https://github.com/theintern/intern/blob/master/docs/configuration.md).
+This configuration tells Intern that, in the browser, we want to use SystemJS to load modules, and that we want to load a plugin to configure SystemJS. The plugin needs to have access to the SystemJS loader, so we set the "useLoader" flag to true. Without the "useLoader" flag the plugin would be loaded _before_ the external loader, meaning it wouldn’t have access to SystemJS.
+
+The configuration also tells Intern that, in addition to running our unit tests in Node.js, we want to run our tests in Chrome. You can find more information about possible configuration options in [the Configuration section of the Intern documentation](https://theintern.io/docs.html#Intern/4/docs/docs%2Fconfiguration.md/properties).
 
 We’ll be doing a little more configuration shortly when we start adding tests, but for now, we already have a complete configuration. You can verify that everything is working by running Intern:
 
@@ -172,6 +176,15 @@ suite('hello', () => {
 In this test module, we’ve registered a new suite for our `hello` module and named it “hello”, written a new test case for the `greet` method and named it “greet”, and added two assertions: one where we call `greet` and pass an argument, and one where we call `greet` without any argument. If either of these assertions fails, they will throw an error and the test case will be considered failed at that point.
 
 Each of our assertions also contains a message that describes what logic the assertion is actually checking. Similar to good code comments that describe *why* a piece of code exists, these messages are used to describe the intent of the code being checked rather than simply describing the assertion. For instance, “Calling greet('Murray') should return "Hello, Murray!"” would be a bad assertion message because it just describes what the assertion is doing, rather than describing the desired outcome. With the message we’ve used in the code above, if the `greet` function were changed in the future to return `"Hi, <name>!"` instead, it would be clear that the test itself needed to be updated because the code still fulfills the described business logic. Similarly, if the method were changed to return `"You suck, <name>!"` instead, it would then be clear that the application code was updated incorrectly.
+
+Now that we’ve created our first test module, we need to update the TypeScript config to actually compile the test. Add a glob for the tests directory to the “include“ property in `tsconfig.json`:
+
+```json
+"include": [
+  "src/**/*.ts",
+  "tests/**/*.ts"
+]
+```
 
 The final step when writing a new test module is to add the **compiled** module‘s path to our configuration file so that it is loaded when we run Intern. To do this, add a `suites` property to the top-level object of `intern.json` with the string `"_dist/tests/unit/hello.js"`:
 
@@ -326,7 +339,6 @@ TOTAL: tested 2 platforms, 3 passed, 0 failed
 At this point, all of our unit and functional tests are passing. The next step is enabling code coverage. Intern is unique in that it not only runs unit and functional tests in one command, but it can also gather coverage information for both types of tests as well! To enable code coverage, set the `"coverage"` property of the top-level object in `intern.json` to a glob pattern (or an array of glob patterns) of compiled files to cover:
 
 ```json
-"environments": { "browserName": "chrome" },
 "coverage": [
     "_dist/src/**/*.js",
     "!_dist/src/system.config.js"
@@ -383,7 +395,7 @@ As you can see, instead of using `"reporters"`, we have used `"reporters+"`. Thi
 
 ## Step 6: Remote testing
 
-At this point, all our tests are written and running in Node.js and Chrome. The only thing that’s left to do is to run all our tests on all the platforms we want to support. We'll do this by setting up a `browserstack` configuration within `intern.json` to run our tests with BrowserStack:
+At this point, all our tests are written and running in Node.js and Chrome. The only thing that’s left to do is to run all our tests on all the platforms we want to support. We’ll do this by setting up a `browserstack` configuration within `intern.json` to run our tests with BrowserStack:
 
 ```json
 "reporters+": "htmlcoverage",
@@ -414,12 +426,12 @@ BROWSERSTACK_USERNAME=<your username> BROWSERSTACK_ACCESS_KEY=<your access key> 
 You can also specify your username and access key on the `tunnelOptions` object in your Intern configuration, using the `username` and `apiKey` keys, if you don’t want to put them on the command line:
 
 ```json
-      "tunnel": "browserstack",
-      "tunnelOptions": {
-        "username": "<your username>",
-        "apiKey": "<your access key>"
-      },
-      "maxConcurrency": 2,
+"tunnel": "browserstack",
+"tunnelOptions": {
+  "username": "<your username>",
+  "apiKey": "<your access key>"
+},
+"maxConcurrency": 2,
 ```
 
 However, keep in mind that keeping this information in a configuration file can expose your username and access key to others if the file is checked into a public repository.
