@@ -5,9 +5,15 @@
     "loader": {
       "script": "systemjs"
     },
-    "plugins": "_dist/src/system.config.js"
+    "plugins": {
+      "script": "_dist/src/system.config.js",
+      "useLoader": true
+    }
   },
-  "environments": { "browserName": "chrome" },
+  "environments": [
+    "node",
+    { "browserName": "chrome" }
+  ],
   "coverage": [
     "_dist/src/**/*.js",
     "!_dist/src/system.config.js"

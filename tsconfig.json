@@ -14,14 +14,13 @@
     "moduleResolution": "node",
     "outDir": "_dist",
     "rootDir": ".",
-
-    "typeRoots": [
-      "./node_modules/@types",
-      "./node_modules/intern/types"
-    ],
     "types": [
       "intern",
       "systemjs"
     ]
-  }
+  },
+  "include": [
+    "src/**/*.ts",
+    "tests/**/*.ts"
+  ]
 }
