@@ -11,13 +11,13 @@
   "homepage": "http://theintern.io/",
   "dependencies": {
     "systemjs": "~0.19.47",
-    "tslib": "~1.7.1"
+    "tslib": "~1.8.0"
   },
   "devDependencies": {
     "@types/systemjs": "~0.20.2",
     "concurrently": "~3.5.0",
     "cpx": "~1.5.0",
-    "intern": "~4.0.0",
+    "intern": "~4.1.0",
     "typescript": "~2.4.1"
   },
   "scripts": {
