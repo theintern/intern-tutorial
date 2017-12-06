@@ -11,7 +11,7 @@
   "homepage": "http://theintern.io/",
   "dependencies": {
     "systemjs": "~0.19.47",
-    "tslib": "~1.7.1"
+    "tslib": "~1.8.0"
   },
   "devDependencies": {
     "@types/systemjs": "~0.20.2",
