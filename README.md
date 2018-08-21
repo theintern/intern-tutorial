@@ -10,7 +10,7 @@ complete this tutorial, you will need the following:
 - A Bourne-compatible shell, like bash or zsh (or knowledge of how to execute
   equivalent commands in your environment)
 - [Git](https://git-scm.com/)
-- [Node 4.0.0+](https://nodejs.org/) and
+- [Node 6.0.0+](https://nodejs.org/) and
   [npm 5.3.0+](https://www.npmjs.com/package/npm)
 - [Java 1.8+](https://java.com/) (for running a local Selenium server)
 - A
@@ -204,7 +204,7 @@ unit test module at `intern-tutorial/tests/unit/hello.ts` and put the following
 boilerplate into it:
 
 ```ts
-const { suite, test } = intern.getInterface('tdd');
+const { suite, test } = intern.getPlugin('interface.tdd');
 const { assert } = intern.getPlugin('chai');
 
 import { greet } from '../../src/app/hello';
@@ -225,7 +225,7 @@ these code branches. If we’ve done it right, our test code will end up looking
 something like this:
 
 ```ts
-const { suite, test } = intern.getInterface('tdd');
+const { suite, test } = intern.getPlugin('interface.tdd');
 const { assert } = intern.getPlugin('chai');
 
 import { greet } from '../../src/app/hello';
@@ -280,6 +280,21 @@ config to actually compile the test. Add a glob for the tests directory to the
   "tests/**/*.ts"
 ]
 ```
+
+Note how the suite file accesses `getPlugin` on a global `intern` variable. This
+variable will be created when Intern is loaded, but the typings won't know about
+it without an additional config update. Add a `types` property to the
+`compilerOptions` section of the `tsconfig.json`:
+
+```json
+"compilerOptions": {
+  "types": ["intern"]
+}
+```
+
+This property tells the Typescript compiler to load Intern's types implicitly
+when compiling the tests, which ensures that Typescript knows about the global
+`intern` variable.
 
 The final step when writing a new test module is to add the **compiled**
 module‘s path to our configuration file so that it is loaded when we run Intern.
@@ -343,7 +358,7 @@ Next, create a test module at `intern-tutorial/tests/functional/index.ts` with
 the following boilerplate:
 
 ```ts
-const { suite, test, before } = intern.getInterface('tdd');
+const { suite, test, before } = intern.getPlugin('interface.tdd');
 const { assert } = intern.getPlugin('chai');
 
 suite('index', () => {
@@ -379,7 +394,7 @@ greeting was properly updated. Once finished, this test will look something like
 this:
 
 ```ts
-const { suite, test, before } = intern.getInterface('tdd');
+const { suite, test, before } = intern.getPlugin('interface.tdd');
 const { assert } = intern.getPlugin('chai');
 
 suite('index', () => {
@@ -417,7 +432,7 @@ suite('index', () => {
 It could also be written using async/await:
 
 ```ts
-const { suite, test, before } = intern.getInterface('tdd');
+const { suite, test, before } = intern.getPlugin('interface.tdd');
 const { assert } = intern.getPlugin('chai');
 
 suite('index', () => {
