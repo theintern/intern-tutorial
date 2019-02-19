@@ -38,7 +38,7 @@ building and testing processes:
 - `npm run build` - runs `npm run compile` and `npm run copy` in parallel
 - `npm run build:watch` - runs `npm run compile:watch` and `npm run copy:watch`
   in parallel
-- `npm test` - builds the application and runs Intern
+- `npm test` - builds the application and runs Intern (These will fail! Read on.)
 
 _In order for the demo application to work properly during the tutorial, make
 sure that you access it using a real web server. Like most applications, it will
@@ -283,7 +283,7 @@ config to actually compile the test. Add a glob for the tests directory to the
 
 Note how the suite file accesses `getPlugin` on a global `intern` variable. This
 variable will be created when Intern is loaded, but the typings won't know about
-it without an additional config update. Add a `types` property to the
+it without an additional config update. If you haven't already, add a `types` property to the
 `compilerOptions` section of the `tsconfig.json`:
 
 ```json
@@ -380,7 +380,7 @@ with it, and retrieve data from it to assert that our actions caused the
 expected result. Since all calls to the remote browser are asynchronous, all
 methods of the `remote` object return promises. This allows us to either chain
 commands (like jQuery) and retrieve results using standard promises-style `then`
-calls or use async/await to write synchronous-looking tests. When we make a
+calls, or use async/await to write synchronous-looking tests. When we make a
 call, it is enqueued and executed once all the previous commands have completed.
 If this description is a little confusing, don’t worry — it should be clearer
 once we look at some code.
@@ -466,7 +466,7 @@ suite('index', () => {
 
 _Note: To learn which methods are available on the `remote` object, check
 Leadfoot’s
-[Command object documentation](https://theintern.github.io/leadfoot/Command.html)._
+[Command object documentation](https://theintern.io/docs.html#Leadfoot/2/api/Command/command-1)._
 
 In the code above, calling `remote.get` loads the HTML page we want to test into
 the browser. Then, we wait for the “loaded” CSS class to appear on the body, for
@@ -612,7 +612,8 @@ BrowserStack, we will need to provide our credentials and our child
 configuration name:
 
 ```bash
-BROWSERSTACK_USERNAME=<your username> BROWSERSTACK_ACCESS_KEY=<your access key> npm test config=@browserstack
+BROWSERSTACK_USERNAME=<your username> BROWSERSTACK_ACCESS_KEY=<your access key> \
+  npm test config=@browserstack
 ```
 
 You can also specify your username and access key on the `tunnelOptions` object
