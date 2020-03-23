@@ -17,8 +17,8 @@
     "@types/systemjs": "~0.20.2",
     "concurrently": "~3.5.0",
     "cpx": "~1.5.0",
-    "intern": "~4.1.0",
-    "typescript": "~2.4.1"
+    "intern": "~4.8.0",
+    "typescript": "~3.8.3"
   },
   "scripts": {
     "build": "concurrently \"npm run compile\" \"npm run copy\"",
