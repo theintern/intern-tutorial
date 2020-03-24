@@ -466,7 +466,7 @@ suite('index', () => {
 
 _Note: To learn which methods are available on the `remote` object, check
 Leadfoot’s
-[Command object documentation](https://theintern.github.io/leadfoot/Command.html)._
+[Command object documentation](https://theintern.io/docs.html#Leadfoot/2/api/Command)._
 
 In the code above, calling `remote.get` loads the HTML page we want to test into
 the browser. Then, we wait for the “loaded” CSS class to appear on the body, for
