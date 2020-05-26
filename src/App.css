@@ -1,0 +1,15 @@
+.App {
+  --border-color: #ccc;
+  --border-radius: 8px;
+  --unit: 14px;
+
+  padding: calc(3 * var(--unit));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.App-logo {
+  width: 75px;
+  margin-top: calc(3 * var(--unit));
+}

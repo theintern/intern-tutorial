@@ -1,0 +1,9 @@
+.Calculator {
+  border: solid 1px var(--border-color);
+  border-radius: calc(2 * var(--border-radius));
+  padding: var(--unit);
+  width: calc(38 * var(--unit));
+  display: flex;
+  flex-direction: column;
+  background: black;
+}

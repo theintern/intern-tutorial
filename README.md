@@ -3,47 +3,37 @@
 [![Intern](https://theintern.io/images/intern-v4.svg)](https://github.com/theintern/intern/)
 
 In this tutorial we will walk through how to set up Intern and how to write
-tests and run tests. This repository contains a basic Hello World demo
-“application” that we’ll be using as an example to build on. In order to
-complete this tutorial, you will need the following:
+tests and run tests. This repository contains a basic demo application that
+we’ll be using as an example to build on. In order to complete this tutorial,
+you will need the following:
 
 - A Bourne-compatible shell, like bash or zsh (or knowledge of how to execute
   equivalent commands in your environment)
 - [Git](https://git-scm.com/)
-- [Node 6.0.0+](https://nodejs.org/) and
-  [npm 5.3.0+](https://www.npmjs.com/package/npm)
-- [Java 1.8+](https://java.com/) (for running a local Selenium server)
+- [Node 10+](https://nodejs.org/), along with
+  [npm](https://www.npmjs.com/package/npm) or [yarn](https://yarnpkg.com)
+- [Java 1.8+](https://java.com/) (for running local functional tests)
 - A
-  [free BrowserStack Automate trial account](https://www.browserstack.com/users/sign_up)
+  [free BrowserStack Automate trial
+  account](https://www.browserstack.com/users/sign_up) (for running cloud-based
+  functional tests)
 
 Once you have all the necessary prerequisites, download the demo application by
 cloning this repository and installing the dependencies:
 
 ```bash
-git clone https://github.com/theintern/intern-tutorial.git
-cd intern-tutorial
-npm install
+$ git clone https://github.com/theintern/intern-tutorial.git
+$ cd intern-tutorial
+$ yarn install
 ```
 
-The application itself consists of a basic HTML page and a single “app” package
-written in TypeScript. Several `npm` scripts have been provided to simplify the
-building and testing processes:
+The application itself is simple calculator created with React and TypeScript.
+Several `npm` scripts have been provided to simplify the building and testing
+processes:
 
-- `npm run compile` - runs the TypeScript compiler once
-- `npm run compile:watch` - runs the TypeScript compiler in watch mode (runs the
-  compiler, waits for changes, and re-compiles when changes are detected)
-- `npm run copy` - copies any assets from `src` to `_dist/src`
-- `npm run copy:watch` - watches for changes to assets in `src` and copies files
-  to `_src/dist` when changes are detected
-- `npm run build` - runs `npm run compile` and `npm run copy` in parallel
-- `npm run build:watch` - runs `npm run compile:watch` and `npm run copy:watch`
-  in parallel
-- `npm test` - builds the application and runs Intern
-
-_In order for the demo application to work properly during the tutorial, make
-sure that you access it using a real web server. Like most applications, it will
-not work from a `file:` URL due to cross-protocol browser security
-restrictions._
+- `npm start` - starts the app in a development server
+- `npm run build` - builds the application
+- `npm test` - builds the application and runs tests
 
 ## What can Intern test?
 
@@ -60,10 +50,10 @@ reporters to influence how your tests run and easily integrate with your
 existing coding environment.
 
 Unlike most other testing systems, Intern also supports two different types of
-testing: unit testing and functional testing. **Unit testing** works by
-executing code directly and inspecting the result, such as calling a function
-and then checking that it returns an expected value. **Functional testing**
-works by mimicking user interaction with a browser by issuing commands through a
+testing: unit testing and functional testing. **Unit tests** import your
+application code and execute it directly; for example, a test might call an
+application function and check that it returns an expected value. **Functional
+tests** mimic user interaction with a browser by issuing commands through a
 WebDriver server (an executable that lets testing tools interact with a
 browser).
 
@@ -80,22 +70,8 @@ development dependency to application’s
 [package.json](https://npmjs.org/doc/json.html):
 
 ```bash
-npm install --save-dev intern
+$ npm install --save-dev intern
 ```
-
-We also need to tell TypeScript to load Intern’s and SystemJS’s type definitions
-by default. This ensures that typings for global variables provided by Intern
-and SystemJS will be available in tests. Add the following to the
-`"compilerOptions"` object in `tsconfig.json`:
-
-```json
-    "types": [
-        "intern",
-        "systemjs"
-    ]
-```
-
-That’s it! Installation is complete.
 
 ## Step 2: Configure Intern
 
@@ -105,36 +81,21 @@ project:
 
 ```json
 {
-  "browser": {
-    "loader": {
-      "script": "systemjs"
-    },
-    "plugins": {
-      "script": "_dist/src/system.config.js",
-      "useLoader": true
-    }
-  },
   "environments": ["node", { "browserName": "chrome" }]
 }
 ```
 
-This configuration tells Intern that, in the browser, we want to use SystemJS to
-load modules, and that we want to load a plugin to configure SystemJS. The
-plugin needs to have access to the SystemJS loader, so we set the "useLoader"
-flag to true. Without the "useLoader" flag the plugin would be loaded _before_
-the external loader, meaning it wouldn’t have access to SystemJS.
-
-The configuration also tells Intern that, in addition to running our unit tests
-in Node.js, we want to run our tests in Chrome. You can find more information
-about possible configuration options in
-[the Configuration section of the Intern documentation](https://theintern.io/docs.html#Intern/4/docs/docs%2Fconfiguration.md/properties).
+This configuration tells Intern that we want to run our unit tests in Node.js
+and in Chrome. You can find more information about possible configuration
+options in [the Configuration section of the Intern
+documentation](https://theintern.io/docs.html#Intern/4/docs/docs%2Fconfiguration.md/properties).
 
 We’ll be doing a little more configuration shortly when we start adding tests,
 but for now, we already have a complete configuration. You can verify that
 everything is working by running Intern:
 
 ```bash
-npm test
+$ npm test
 ```
 
 It should output:
@@ -196,18 +157,23 @@ corresponding code module being tested. First, create a new subdirectory for
 storing all of the unit tests:
 
 ```bash
-mkdir -p tests/unit
+$ mkdir -p tests/unit
 ```
 
-We have one code module in our demo app (`app/hello`), so we’ll create a new
-unit test module at `intern-tutorial/tests/unit/hello.ts` and put the following
-boilerplate into it:
+Tests will live in the `tests/` directory, separate from the application code.
+This is a very common pattern, but Intern can also work with test modules that
+live in the application code.
+
+Our application has several modules that should be tested. A good place to
+start would be the `logic` module, which contains the business logic of the
+calculator. Create a unit test module at `intern-tutorial/tests/unit/logic.ts`
+and put the following boilerplate into it:
 
 ```ts
 const { suite, test } = intern.getPlugin('interface.tdd');
 const { assert } = intern.getPlugin('chai');
 
-import { greet } from '../../src/app/hello';
+import { KEY_HANDLERS } from 'src/app/hello';
 ```
 
 This bit of code loads the `suite` and `test` functions from the TDD test
@@ -418,7 +384,7 @@ suite('index', () => {
 
       .findById('greeting')
       .getVisibleText()
-      .then(text => {
+      .then((text) => {
         assert.strictEqual(
           text,
           'Hello, Elaine!',

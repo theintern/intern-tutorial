@@ -1,21 +1,25 @@
 {
   "compilerOptions": {
     "target": "es5",
-    "module": "commonjs",
     "lib": [
       "dom",
-      "es5",
-      "es2015.promise",
-      "es2015.symbol.wellknown"
+      "dom.iterable",
+      "esnext"
     ],
-    "sourceMap": true,
-    "importHelpers": true,
-    "noImplicitAny": true,
+    "allowJs": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "module": "esnext",
     "moduleResolution": "node",
-    "outDir": "_dist",
-    "rootDir": "."
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react"
   },
   "include": [
-    "src/**/*.ts"
+    "src"
   ]
 }

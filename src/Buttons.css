@@ -1,0 +1,29 @@
+.Buttons {
+  width: auto;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-gap: var(--unit);
+  align-content: end;
+}
+
+.Buttons button {
+  border: none;
+  height: calc(4 * var(--unit));
+  font-size: calc(2 * var(--unit));
+  border-radius: var(--border-radius);
+}
+
+.Buttons-ac {
+  background: #f77;
+}
+
+.Buttons-equals {
+  background: #7f7;
+  grid-column-start: 3;
+  grid-column-end: 5;
+}
+
+.Buttons-activeOp {
+  background: #ff5;
+  box-shadow: 0 0 calc(var(--unit) / 5) calc(var(--unit) / 5) #ff5;
+}

@@ -1,0 +1,13 @@
+.Display {
+  padding: var(--unit) calc(2 * var(--unit));
+  background: #ddd;
+  margin-bottom: var(--unit);
+  font-size: calc(2.75 * var(--unit));
+  font-family: monospace;
+  border: solid 1px var(--border-color);
+  width: auto;
+  text-align: right;
+  border-radius: var(--border-radius);
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
