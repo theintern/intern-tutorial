@@ -1,0 +1,6 @@
+{
+  "suites": "tests/unit/**/*.ts",
+  "node": {
+    "tsconfig": "tests/tsconfig.json"
+  }
+}
