@@ -1,3 +1,6 @@
+import { services } from '@theintern/a11y';
+
+const { axe } = services;
 const { suite, test } = intern.getPlugin('interface.tdd');
 const { assert } = intern.getPlugin('chai');
 
@@ -11,5 +14,13 @@ suite('app', () => {
 		const display = await remote.findByCssSelector('.Display');
 		const text = await display.getVisibleText();
 		assert.equal(text, '3');
+	});
+
+
+	test('a11y check', async ({ remote }) => {
+		await axe.check({
+			remote,
+			source: 'http://localhost:3000'
+		});
 	});
 });

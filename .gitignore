@@ -3,3 +3,4 @@ node_modules/
 build/
 .DS_Store
 _tests/
+a11y-report/
