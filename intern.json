@@ -1,10 +1,16 @@
 {
-  "suites": "tests/unit/**/*.ts",
   "node": {
+    "suites": "tests/unit/**/*.ts",
     "tsconfig": "tests/tsconfig.json"
   },
   "browser": {
     "suites": "_tests/unit.js"
   },
-  "environments": ["node", "chrome"]
+  "environments": ["node", "chrome"],
+  "functionalSuites": "tests/functional/**/*.ts",
+  "functionalTimeouts": {
+    "find": 10000,
+    "pageLoad": 10000,
+    "executeAsync": 1000
+  }
 }
