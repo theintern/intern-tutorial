@@ -12,5 +12,17 @@
     "find": 10000,
     "pageLoad": 10000,
     "executeAsync": 1000
+  },
+  "configs": {
+    "browserstack": {
+      "capabilities": {
+        "buildName": "intern-tutorial OJSW",
+        "projectName": "intern-tutorial"
+      },
+      "tunnel": "browserstack",
+      "environments": [
+        "chrome", "firefox"
+      ]
+    }
   }
 }
