@@ -6,7 +6,7 @@ export default function App() {
   return (
     <div className="App">
       <Calculator />
-      <img className="App-logo" src="intern_logo.svg"/>
+      <img className="App-logo" src="intern_logo.svg" alt="Intern logo"/>
     </div>
   );
 }

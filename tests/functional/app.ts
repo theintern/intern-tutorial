@@ -1,4 +1,5 @@
 import { services } from '@theintern/a11y';
+import { visualTest } from '@theintern/visual-plugin';
 
 const { axe } = services;
 const { suite, test } = intern.getPlugin('interface.tdd');
@@ -23,4 +24,9 @@ suite('app', () => {
 			source: 'http://localhost:3000'
 		});
 	});
+
+	test('visual check', visualTest({
+		url: 'http://localhost:3000',
+		missingBaseline: 'snapshot'
+	}));
 });
