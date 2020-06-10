@@ -2,5 +2,9 @@
   "suites": "tests/unit/**/*.ts",
   "node": {
     "tsconfig": "tests/tsconfig.json"
-  }
+  },
+  "browser": {
+    "suites": "_tests/unit.js"
+  },
+  "environments": ["node", "chrome"]
 }

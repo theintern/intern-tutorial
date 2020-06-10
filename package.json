@@ -33,6 +33,7 @@
     ]
   },
   "devDependencies": {
-    "intern": "~4.8.7"
+    "intern": "~4.8.7",
+    "ts-loader": "~7.0.5"
   }
 }
